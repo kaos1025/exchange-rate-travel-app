@@ -1,0 +1,46 @@
+{
+  "mcpServers": {
+    "supabase-mcp": {
+      "command": "wsl",
+      "args": [
+        "npx",
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@supabase-community/supabase-mcp",
+        "--key",
+        "7f709f03-0354-4c4e-9b54-35dff68e85f2",
+        "--profile",
+        "hilarious-elephant-wxhkIw"
+      ]
+    },
+    "github": {
+      "command": "wsl",
+      "args": [
+        "npx",
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@smithery-ai/github",
+        "--key",
+        "7f709f03-0354-4c4e-9b54-35dff68e85f2",
+        "--profile",
+        "hilarious-elephant-wxhkIw"
+      ]
+    },
+    "playwright-mcp": {
+      "command": "wsl",
+      "args": [
+        "npx",
+        "-y",
+        "@smithery/cli@latest",
+        "run",
+        "@microsoft/playwright-mcp",
+        "--key",
+        "7f709f03-0354-4c4e-9b54-35dff68e85f2",
+        "--profile",
+        "hilarious-elephant-wxhkIw"
+      ]
+    }
+  }
+}
