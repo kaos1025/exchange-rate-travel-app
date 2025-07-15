@@ -4,46 +4,83 @@ from decimal import Decimal
 import uuid
 from ..models.alert import AlertSetting, AlertSettingCreate, AlertSettingUpdate, NotificationHistory
 from .exchange_rate import ExchangeRateService
+from ..database import get_supabase
 
 class AlertService:
     """알림 설정 관리 서비스"""
     
     def __init__(self):
-        # MVP에서는 메모리 기반 저장소 사용 (실제로는 데이터베이스 사용)
-        self.alert_settings: Dict[str, AlertSetting] = {}
-        self.notification_history: List[NotificationHistory] = []
+        self.supabase = get_supabase()
         self.exchange_service = ExchangeRateService()
     
     async def create_alert_setting(self, user_id: str, alert_data: AlertSettingCreate) -> AlertSetting:
         """새 알림 설정 생성"""
-        alert_id = str(uuid.uuid4())
-        now = datetime.now()
+        alert_data_dict = {
+            "user_id": user_id,
+            "currency_from": alert_data.currency_from.upper(),
+            "currency_to": alert_data.currency_to.upper(),
+            "target_rate": float(alert_data.target_rate),
+            "condition": alert_data.condition,
+            "is_active": alert_data.is_active
+        }
         
-        alert_setting = AlertSetting(
-            id=alert_id,
-            user_id=user_id,
-            currency_from=alert_data.currency_from.upper(),
-            currency_to=alert_data.currency_to.upper(),
-            target_rate=alert_data.target_rate,
-            condition=alert_data.condition,
-            is_active=alert_data.is_active,
-            created_at=now,
-            updated_at=now
-        )
+        response = self.supabase.table("alert_settings").insert(alert_data_dict).execute()
         
-        self.alert_settings[alert_id] = alert_setting
-        return alert_setting
+        if response.data:
+            alert_data_response = response.data[0]
+            return AlertSetting(
+                id=alert_data_response["id"],
+                user_id=alert_data_response["user_id"],
+                currency_from=alert_data_response["currency_from"],
+                currency_to=alert_data_response["currency_to"],
+                target_rate=Decimal(str(alert_data_response["target_rate"])),
+                condition=alert_data_response["condition"],
+                is_active=alert_data_response["is_active"],
+                created_at=datetime.fromisoformat(alert_data_response["created_at"]),
+                updated_at=datetime.fromisoformat(alert_data_response["updated_at"])
+            )
+        else:
+            raise Exception("알림 설정 생성에 실패했습니다")
     
     async def get_user_alerts(self, user_id: str) -> List[AlertSetting]:
         """사용자의 모든 알림 설정 조회"""
-        return [
-            alert for alert in self.alert_settings.values() 
-            if alert.user_id == user_id
-        ]
+        response = self.supabase.table("alert_settings").select("*").eq("user_id", user_id).execute()
+        
+        alerts = []
+        for alert_data in response.data:
+            alerts.append(AlertSetting(
+                id=alert_data["id"],
+                user_id=alert_data["user_id"],
+                currency_from=alert_data["currency_from"],
+                currency_to=alert_data["currency_to"],
+                target_rate=Decimal(str(alert_data["target_rate"])),
+                condition=alert_data["condition"],
+                is_active=alert_data["is_active"],
+                created_at=datetime.fromisoformat(alert_data["created_at"]),
+                updated_at=datetime.fromisoformat(alert_data["updated_at"])
+            ))
+        
+        return alerts
     
     async def get_alert_by_id(self, alert_id: str) -> Optional[AlertSetting]:
         """ID로 알림 설정 조회"""
-        return self.alert_settings.get(alert_id)
+        response = self.supabase.table("alert_settings").select("*").eq("id", alert_id).execute()
+        
+        if response.data:
+            alert_data = response.data[0]
+            return AlertSetting(
+                id=alert_data["id"],
+                user_id=alert_data["user_id"],
+                currency_from=alert_data["currency_from"],
+                currency_to=alert_data["currency_to"],
+                target_rate=Decimal(str(alert_data["target_rate"])),
+                condition=alert_data["condition"],
+                is_active=alert_data["is_active"],
+                created_at=datetime.fromisoformat(alert_data["created_at"]),
+                updated_at=datetime.fromisoformat(alert_data["updated_at"])
+            )
+        
+        return None
     
     async def update_alert_setting(self, alert_id: str, update_data: AlertSettingUpdate) -> Optional[AlertSetting]:
         """알림 설정 수정"""
@@ -65,10 +102,8 @@ class AlertService:
     
     async def delete_alert_setting(self, alert_id: str) -> bool:
         """알림 설정 삭제"""
-        if alert_id in self.alert_settings:
-            del self.alert_settings[alert_id]
-            return True
-        return False
+        response = self.supabase.table("alert_settings").delete().eq("id", alert_id).execute()
+        return len(response.data) > 0
     
     async def get_active_alerts(self) -> List[AlertSetting]:
         """활성화된 모든 알림 설정 조회"""

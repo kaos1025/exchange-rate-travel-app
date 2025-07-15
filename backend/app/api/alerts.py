@@ -1,20 +1,14 @@
-from fastapi import APIRouter, HTTPException, Query, Header
+from fastapi import APIRouter, HTTPException, Query, Header, Depends
 from typing import List, Optional
 from ..models.alert import AlertSetting, AlertSettingCreate, AlertSettingUpdate, NotificationHistory
 from ..services.alert_service import AlertService
 from ..services.monitoring_service import get_monitoring_service
 from ..services.notification import NotificationService
+from .auth import get_current_user_id
 
-router = APIRouter(prefix="/alerts", tags=["alerts"])
+router = APIRouter(tags=["alerts"])
 alert_service = AlertService()
 notification_service = NotificationService()
-
-# MVP용 간단한 사용자 인증 (실제로는 JWT 토큰 사용)
-def get_current_user_id(x_user_id: str = Header(None)) -> str:
-    """헤더에서 사용자 ID 추출 (MVP용)"""
-    if not x_user_id:
-        raise HTTPException(status_code=401, detail="사용자 인증이 필요합니다")
-    return x_user_id
 
 @router.get("/", response_model=List[AlertSetting])
 async def get_user_alerts(user_id: str = Header(alias="X-User-ID")):
