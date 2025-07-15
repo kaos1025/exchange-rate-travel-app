@@ -1,0 +1,13 @@
+{
+  "name": "exchange-rate-travel-app",
+  "version": "1.0.0",
+  "description": "Exchange rate travel application",
+  "main": "index.js",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "dev": "cd frontend && npm run dev"
+  },
+  "keywords": ["exchange-rate", "travel", "currency"],
+  "author": "",
+  "license": "ISC"
+}
