@@ -3,6 +3,7 @@ import { MinimalHeader } from './components/MinimalHeader'
 import { ExchangeRateCard } from './components/ExchangeRateCard'
 import { CurrencyCalculator } from './components/CurrencyCalculator'
 import { TravelContext } from './components/TravelContext'
+import { ExchangeRateChart } from './components/ExchangeRateChart'
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <div className="space-y-12">
           <ExchangeRateCard />
           <CurrencyCalculator />
+          <ExchangeRateChart />
           <TravelContext />
         </div>
       </main>

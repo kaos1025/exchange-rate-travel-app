@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useAuth } from '../services/auth'
+import { useAuth } from '../hooks/useApi'
 import { useNavigate, Link } from 'react-router-dom'
 
 const Login = () => {
@@ -8,7 +8,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
-  const { signIn, user } = useAuth()
+  const { login, user, error: authError } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -22,12 +22,11 @@ const Login = () => {
     setLoading(true)
     setError('')
 
-    const { error } = await signIn(email, password)
-    
-    if (error) {
-      setError(error.message)
-    } else {
+    try {
+      await login(email, password)
       navigate('/')
+    } catch (err) {
+      setError(err.message)
     }
     
     setLoading(false)
@@ -48,9 +47,9 @@ const Login = () => {
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
+          {(error || authError) && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              {error}
+              {error || authError}
             </div>
           )}
           <div className="rounded-md shadow-sm -space-y-px">
