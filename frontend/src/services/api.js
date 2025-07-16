@@ -103,7 +103,15 @@ class ApiService {
 
   // 환율 API
   async getExchangeRates() {
-    return await this.request('/exchange/rates')
+    console.log('ApiService.getExchangeRates - API 호출 시작, baseURL:', this.baseURL);
+    try {
+      const result = await this.request('/exchange/rates');
+      console.log('ApiService.getExchangeRates - 성공 응답:', result);
+      return result;
+    } catch (error) {
+      console.error('ApiService.getExchangeRates - 오류:', error);
+      throw error;
+    }
   }
 
   async convertCurrency(from, to, amount) {

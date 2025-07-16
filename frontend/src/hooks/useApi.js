@@ -33,7 +33,13 @@ export const useApiCall = (apiFunction, dependencies = []) => {
 
 // 환율 정보 훅
 export const useExchangeRates = () => {
-  return useApiCall(() => apiService.getExchangeRates())
+  const result = useApiCall(() => {
+    console.log('useExchangeRates - API 호출 시작');
+    return apiService.getExchangeRates();
+  });
+  
+  console.log('useExchangeRates - 결과:', result);
+  return result;
 }
 
 // 환율 변환 훅

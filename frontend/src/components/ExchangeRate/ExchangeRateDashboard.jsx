@@ -13,6 +13,11 @@ const fallbackRates = [
 export default function ExchangeRateDashboard() {
   const { data: apiRates, loading, error, refetch } = useExchangeRates();
   const [displayRates, setDisplayRates] = useState(fallbackRates);
+  
+  // 디버깅을 위한 로그
+  console.log('ExchangeRateDashboard - apiRates:', apiRates);
+  console.log('ExchangeRateDashboard - loading:', loading);
+  console.log('ExchangeRateDashboard - error:', error);
 
   useEffect(() => {
     if (apiRates && apiRates.rates) {
@@ -50,6 +55,16 @@ export default function ExchangeRateDashboard() {
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-8">
+      <div className="text-center py-2 mb-4">
+        <div className="bg-gray-100 rounded-lg p-3 text-xs font-mono">
+          <p><strong>Debug Info:</strong></p>
+          <p>Loading: {loading ? 'true' : 'false'}</p>
+          <p>Error: {error || 'none'}</p>
+          <p>API Data: {apiRates ? 'received' : 'null'}</p>
+          <p>Display Mode: {apiRates?.rates ? 'Real API' : 'Fallback'}</p>
+        </div>
+      </div>
+      
       {loading && (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
