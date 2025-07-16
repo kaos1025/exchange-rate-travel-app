@@ -15,15 +15,21 @@ export default function ExchangeRateDashboard() {
   const [displayRates, setDisplayRates] = useState(fallbackRates);
 
   useEffect(() => {
-    if (apiRates && apiRates.length > 0) {
+    if (apiRates && apiRates.rates) {
       // API 데이터를 컴포넌트에 맞는 형태로 변환
-      const transformedRates = apiRates.map(rate => ({
-        pair: `${rate.from_currency}/${rate.to_currency}`,
-        country: getCountryCode(rate.from_currency),
-        rate: rate.rate,
-        diff: rate.change_amount || 0,
-        diffRate: rate.change_percentage || 0
-      }));
+      const targetCurrencies = ['USD', 'JPY', 'EUR', 'CNY'];
+      const transformedRates = targetCurrencies.map(currency => {
+        const pair = `${currency}/KRW`;
+        const rate = currency === 'USD' ? apiRates.rates.KRW : apiRates.rates.KRW / apiRates.rates[currency];
+        
+        return {
+          pair,
+          country: getCountryCode(currency),
+          rate: parseFloat(rate.toFixed(2)),
+          diff: 0, // 변동폭 데이터가 없어서 0으로 설정
+          diffRate: 0 // 변동률 데이터가 없어서 0으로 설정
+        };
+      });
       setDisplayRates(transformedRates);
     }
   }, [apiRates]);
@@ -51,11 +57,18 @@ export default function ExchangeRateDashboard() {
         </div>
       )}
       
+      {apiRates && !loading && (
+        <div className="text-center py-2 mb-4">
+          <p className="text-green-600 text-xs">✅ 실시간 환율 데이터 ({apiRates.timestamp})</p>
+        </div>
+      )}
+      
       {error && (
         <div className="text-center py-4 mb-4">
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <p className="text-yellow-800 text-sm">실시간 환율 정보를 불러올 수 없습니다.</p>
             <p className="text-yellow-600 text-xs mt-1">임시 데이터를 표시하고 있습니다.</p>
+            <p className="text-red-600 text-xs mt-1">에러: {error}</p>
             <button 
               onClick={refetch}
               className="mt-2 text-xs bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded transition-colors"
