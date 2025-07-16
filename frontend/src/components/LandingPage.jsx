@@ -7,7 +7,7 @@ import { AlertSettings } from './AlertSettings';
 import { Features } from './Features';
 import { Footer } from './Footer';
 import { ThemeProvider } from '../contexts/ThemeContext';
-import { ToastProvider } from '../contexts/ToastContext';
+import { ToastProvider } from './ui/Toast';
 
 export function LandingPage() {
   return (

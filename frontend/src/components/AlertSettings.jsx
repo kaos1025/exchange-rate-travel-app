@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from './ui/Card';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from './ui/Toast';
 
 export function AlertSettings() {
-  const { showToast } = useToast();
+  const { success, error } = useToast();
   const [formData, setFormData] = useState({
     currencyPair: 'USD/KRW',
     condition: '이상',
@@ -41,11 +41,11 @@ export function AlertSettings() {
     e.preventDefault();
     
     if (!formData.targetRate) {
-      showToast('목표 환율을 입력해주세요.', 'error');
+      error('목표 환율을 입력해주세요.');
       return;
     }
 
-    showToast('환율 알림이 설정되었습니다!', 'success');
+    success('환율 알림이 설정되었습니다!');
     console.log('Alert settings:', formData);
   };
 
