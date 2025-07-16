@@ -57,7 +57,11 @@ export const useCurrencyConverter = () => {
     }
   }
 
-  return { result, loading, error, convert }
+  const clearError = () => {
+    setError(null)
+  }
+
+  return { result, loading, error, convert, clearError }
 }
 
 // 사용자 알림 설정 훅

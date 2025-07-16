@@ -13,7 +13,7 @@ export function CurrencyCalculator() {
   const [isBackendOnline, setIsBackendOnline] = useState(false);
   const [offlineMode, setOfflineMode] = useState(true);
   
-  const { convert, result, loading, error } = useCurrencyConverter();
+  const { convert, result, loading, error, clearError } = useCurrencyConverter();
   const { data: exchangeRates } = useExchangeRates();
 
   // 임시 환율 데이터 (실제 API 연동 전까지 사용)
@@ -50,6 +50,8 @@ export function CurrencyCalculator() {
       } catch (error) {
         setIsBackendOnline(false);
         setOfflineMode(true);
+        // 오프라인 모드로 전환 시 에러 상태 초기화
+        clearError();
       }
     };
 
@@ -57,7 +59,7 @@ export function CurrencyCalculator() {
     // 30초마다 백엔드 상태 재확인
     const interval = setInterval(checkBackendStatus, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [clearError]);
 
   const handleConvert = async () => {
     if (!fromAmount || isNaN(parseFloat(fromAmount))) return;
@@ -77,7 +79,12 @@ export function CurrencyCalculator() {
           console.log('API 호출 실패, 오프라인 모드로 전환:', apiError.message);
           setOfflineMode(true);
           setIsBackendOnline(false);
+          // API 호출 실패 시 훅의 에러 상태 초기화
+          clearError();
         }
+      } else {
+        // 오프라인 모드일 때 에러 상태 초기화
+        clearError();
       }
       
       // 오프라인 모드 또는 API 실패 시 목업 데이터 사용
