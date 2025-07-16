@@ -1,5 +1,6 @@
 import React from 'react';
-import { CurrencyConverter, ExchangeRateDisplay, ExchangeRateChart } from '../components/ExchangeRate';
+import ExchangeRateDashboard from '../components/ExchangeRate/ExchangeRateDashboard';
+import { CurrencyConverter, ExchangeRateChart } from '../components/ExchangeRate';
 
 export function ExchangeRatePage() {
   return (
@@ -9,12 +10,13 @@ export function ExchangeRatePage() {
         <p className="text-xl text-blue-600">실시간 환율 조회, 계산기, 차트를 한 곳에서 확인하세요</p>
       </div>
 
+      {/* 카드 기반 환율 대시보드 */}
+      <ExchangeRateDashboard />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-8">
           <CurrencyConverter />
-          <ExchangeRateDisplay />
         </div>
-        
         <div className="lg:sticky lg:top-8">
           <ExchangeRateChart />
         </div>
