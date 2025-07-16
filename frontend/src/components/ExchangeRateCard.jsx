@@ -11,14 +11,14 @@ export function ExchangeRateCard() {
   });
 
   return (
-    <Card className="max-w-md mx-auto">
-      <CardContent className="p-8">
+    <Card className="max-w-md mx-auto animate-fade-in hover:shadow-lg transition-all duration-300">
+      <CardContent className="p-4 sm:p-6 lg:p-8">
         <div className="text-center space-y-4">
           <div className="space-y-1">
-            <h2 className="text-sm font-medium text-gray-600 tracking-wide">
+            <h2 className="text-sm font-medium text-gray-600 dark:text-gray-400 tracking-wide">
               USD/KRW
             </h2>
-            <div className="text-5xl font-light text-gray-900">
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-light text-gray-900 dark:text-gray-100 animate-scale-in">
               {exchangeData.rate.toLocaleString()}
             </div>
           </div>

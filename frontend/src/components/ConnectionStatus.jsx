@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Wifi, WifiOff, Server, AlertCircle } from 'lucide-react'
 import { apiService } from '../services/api'
+import { LoadingSpinner } from './ui/LoadingSpinner'
 
 export function ConnectionStatus() {
   const [isOnline, setIsOnline] = useState(true)
@@ -56,7 +57,7 @@ export function ConnectionStatus() {
     if (!isOnline) return <WifiOff size={14} />
     if (backendStatus === 'online') return <Server size={14} />
     if (backendStatus === 'offline') return <AlertCircle size={14} />
-    return <Wifi size={14} className="animate-pulse" />
+    return <LoadingSpinner size="sm" className="text-white" />
   }
 
   return (

@@ -3,6 +3,8 @@ import { Card, CardContent } from './ui/Card';
 import { ArrowRight, RefreshCw } from 'lucide-react';
 import { useCurrencyConverter, useExchangeRates } from '../hooks/useApi';
 import { apiService } from '../services/api';
+import { LoadingSpinner, LoadingOverlay } from './ui/LoadingSpinner';
+import { useToast } from './ui/Toast';
 
 export function CurrencyCalculator() {
   const [fromAmount, setFromAmount] = useState('100');
@@ -15,6 +17,7 @@ export function CurrencyCalculator() {
   
   const { convert, result, loading, error, clearError } = useCurrencyConverter();
   const { data: exchangeRates } = useExchangeRates();
+  const toast = useToast();
 
   // 임시 환율 데이터 (실제 API 연동 전까지 사용)
   const mockExchangeRates = {
@@ -45,9 +48,15 @@ export function CurrencyCalculator() {
     const checkBackendStatus = async () => {
       try {
         await apiService.healthCheck();
+        if (offlineMode) {
+          toast.success('백엔드 서버 연결됨! 실시간 환율을 사용합니다.');
+        }
         setIsBackendOnline(true);
         setOfflineMode(false);
       } catch (error) {
+        if (!offlineMode) {
+          toast.warning('백엔드 서버 연결 실패. 오프라인 모드로 전환합니다.');
+        }
         setIsBackendOnline(false);
         setOfflineMode(true);
         // 오프라인 모드로 전환 시 에러 상태 초기화
@@ -59,7 +68,7 @@ export function CurrencyCalculator() {
     // 30초마다 백엔드 상태 재확인
     const interval = setInterval(checkBackendStatus, 30000);
     return () => clearInterval(interval);
-  }, [clearError]);
+  }, [clearError, offlineMode, toast]);
 
   const handleConvert = async () => {
     if (!fromAmount || isNaN(parseFloat(fromAmount))) return;
@@ -135,10 +144,14 @@ export function CurrencyCalculator() {
   }, [fromAmount, fromCurrency, toCurrency]);
 
   return (
-    <Card className="max-w-2xl mx-auto">
-      <CardContent className="p-8">
-        <div className="space-y-6">
-          <div className="flex items-center space-x-6">
+    <LoadingOverlay 
+      isLoading={isConverting && !offlineMode} 
+      message="실시간 환율 조회 중..."
+    >
+      <Card className="max-w-2xl mx-auto transition-all duration-300 hover:shadow-lg">
+        <CardContent className="p-4 sm:p-6 lg:p-8">
+          <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-600 mb-2">
                 <select
@@ -157,12 +170,12 @@ export function CurrencyCalculator() {
                 type="text"
                 value={fromAmount}
                 onChange={handleFromAmountChange}
-                className="w-full text-2xl font-light border-0 bg-transparent focus:outline-none focus:ring-0 p-0 text-gray-900"
+                className="w-full text-xl sm:text-2xl font-light border-0 bg-transparent focus:outline-none focus:ring-0 p-0 text-gray-900"
                 placeholder="0"
               />
             </div>
             
-            <div className="flex flex-col items-center pt-8 space-y-2">
+            <div className="flex flex-col items-center pt-0 sm:pt-8 space-y-2">
               <button
                 onClick={swapCurrencies}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -170,7 +183,7 @@ export function CurrencyCalculator() {
               >
                 <RefreshCw className="text-gray-600" size={16} />
               </button>
-              <ArrowRight className="text-gray-600" size={20} />
+              <ArrowRight className="text-gray-600 rotate-90 sm:rotate-0" size={20} />
             </div>
             
             <div className="flex-1">
@@ -192,12 +205,12 @@ export function CurrencyCalculator() {
                   type="text"
                   value={toAmount}
                   readOnly
-                  className="w-full text-2xl font-light border-0 bg-transparent focus:outline-none focus:ring-0 p-0 text-gray-900"
+                  className="w-full text-xl sm:text-2xl font-light border-0 bg-transparent focus:outline-none focus:ring-0 p-0 text-gray-900"
                   placeholder="0"
                 />
                 {(loading || isConverting) && (
                   <div className="absolute right-0 top-2">
-                    <RefreshCw className="animate-spin text-gray-400" size={20} />
+                    <LoadingSpinner size="sm" />
                   </div>
                 )}
               </div>
@@ -218,8 +231,9 @@ export function CurrencyCalculator() {
               {!offlineMode && isBackendOnline && result && <span className="text-xs text-green-500 ml-2">(실시간 환율)</span>}
             </div>
           )}
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+    </LoadingOverlay>
   );
 }
