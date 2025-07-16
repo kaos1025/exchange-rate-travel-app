@@ -35,7 +35,7 @@ export function Calculator() {
 
   return (
     <section id="calculator" className="mb-12">
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-8">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 shadow-sm">
         <h2 className="text-2xl font-semibold text-gray-900 dark:text-white text-center mb-8">
           환율 계산기
         </h2>
@@ -94,14 +94,14 @@ export function Calculator() {
           </div>
         </div>
         
-        <div className="text-center mt-6">
-          <div className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-4">
+        <div className="text-center mt-8">
+          <div className="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-6">
             {fromAmount} {fromCurrency} = {result} {toCurrency}
           </div>
           
           <button
             onClick={handleCalculate}
-            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
+            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
           >
             계산하기
           </button>

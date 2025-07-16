@@ -29,23 +29,26 @@ export function Features() {
   ];
 
   return (
-    <section className="mb-12">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+    <section className="mb-16">
+      <div className="text-center mb-12">
+        <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
           주요 기능
         </h2>
+        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          ExchangeAlert의 강력한 기능들을 만나보세요
+        </p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {features.map((feature) => (
-          <div key={feature.id} className="text-center p-6 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200">
-            <div className="text-4xl mb-4">
+          <div key={feature.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-8 text-center shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+            <div className="text-5xl mb-6">
               {feature.icon}
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               {feature.title}
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
               {feature.description}
             </p>
           </div>

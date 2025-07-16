@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from './ui/Card';
-import { TrendingUp, TrendingDown } from 'lucide-react';
 
 export function ExchangeRatesGrid() {
   const [rates, setRates] = useState([
@@ -46,38 +44,26 @@ export function ExchangeRatesGrid() {
     <section id="rates" className="mb-12">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {rates.map((rate) => (
-          <Card key={rate.id} className="hover:shadow-lg transition-shadow duration-300">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {rate.currencyPair}
-                </span>
-                <span className="text-2xl">
-                  {rate.flag}
-                </span>
-              </div>
-              
-              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {rate.rate.toLocaleString()}
-              </div>
-              
-              <div className={`flex items-center space-x-1 text-sm font-medium ${
-                rate.isPositive ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {rate.isPositive ? (
-                  <TrendingUp size={16} />
-                ) : (
-                  <TrendingDown size={16} />
-                )}
-                <span>
-                  {rate.isPositive ? '+' : ''}{rate.change}
-                </span>
-                <span>
-                  ({rate.isPositive ? '+' : ''}{rate.changePercent}%)
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+          <div key={rate.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-center mb-4">
+              <span className="font-semibold text-lg text-gray-900 dark:text-white">
+                {rate.currencyPair}
+              </span>
+              <span className="text-2xl">
+                {rate.flag}
+              </span>
+            </div>
+            
+            <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              {rate.rate.toLocaleString()}
+            </div>
+            
+            <div className={`text-sm font-medium ${
+              rate.isPositive ? 'text-green-500' : 'text-red-500'
+            }`}>
+              {rate.isPositive ? '+' : ''}{rate.change} ({rate.isPositive ? '+' : ''}{rate.changePercent}%)
+            </div>
+          </div>
         ))}
       </div>
     </section>
