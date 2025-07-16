@@ -12,6 +12,18 @@ const ExchangeRates = () => {
   const [fromCurrency, setFromCurrency] = useState('USD')
   const [toCurrency, setToCurrency] = useState('KRW')
   const [convertedAmount, setConvertedAmount] = useState(0)
+  const [isOfflineMode, setIsOfflineMode] = useState(false)
+
+  // 목업 환율 데이터 (오프라인 모드용)
+  const mockRates = {
+    KRW: 1340.5,
+    JPY: 150.0,
+    EUR: 0.85,
+    GBP: 0.79,
+    CNY: 7.24,
+    AUD: 1.52,
+    CAD: 1.35
+  }
 
   useEffect(() => {
     if (!loading && !user) {
@@ -20,16 +32,27 @@ const ExchangeRates = () => {
   }, [user, loading, navigate])
 
   useEffect(() => {
+    // 초기에 목업 데이터로 시작
+    setRates(mockRates)
+    setIsOfflineMode(true)
+    setLoadingRates(false)
+    
+    // 그 다음 실제 API 호출 시도
     fetchExchangeRates()
   }, [])
 
   const fetchExchangeRates = async () => {
     try {
+      setLoadingRates(true)
       const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD')
       setRates(response.data.rates)
+      setIsOfflineMode(false)
       setLoadingRates(false)
     } catch (error) {
-      console.error('Failed to fetch exchange rates:', error)
+      console.error('Failed to fetch exchange rates, using offline data:', error)
+      // API 실패 시 목업 데이터 사용
+      setRates(mockRates)
+      setIsOfflineMode(true)
       setLoadingRates(false)
     }
   }
@@ -160,7 +183,14 @@ const ExchangeRates = () => {
           </div>
 
           <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">주요 환율 (USD 기준)</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">주요 환율 (USD 기준)</h3>
+              {isOfflineMode && (
+                <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                  오프라인 모드
+                </span>
+              )}
+            </div>
             {loadingRates ? (
               <div className="text-center">환율 정보를 불러오는 중...</div>
             ) : (
@@ -176,8 +206,9 @@ const ExchangeRates = () => {
             <button
               onClick={fetchExchangeRates}
               className="mt-4 w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700"
+              disabled={loadingRates}
             >
-              환율 새로고침
+              {loadingRates ? '새로고침 중...' : '환율 새로고침'}
             </button>
           </div>
         </div>

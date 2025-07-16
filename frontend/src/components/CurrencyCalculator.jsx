@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from './ui/Card';
 import { ArrowRight, RefreshCw } from 'lucide-react';
 import { useCurrencyConverter, useExchangeRates } from '../hooks/useApi';
+import { apiService } from '../services/api';
 
 export function CurrencyCalculator() {
   const [fromAmount, setFromAmount] = useState('100');
@@ -9,6 +10,8 @@ export function CurrencyCalculator() {
   const [fromCurrency, setFromCurrency] = useState('USD');
   const [toCurrency, setToCurrency] = useState('KRW');
   const [isConverting, setIsConverting] = useState(false);
+  const [isBackendOnline, setIsBackendOnline] = useState(false);
+  const [offlineMode, setOfflineMode] = useState(true);
   
   const { convert, result, loading, error } = useCurrencyConverter();
   const { data: exchangeRates } = useExchangeRates();
@@ -37,24 +40,47 @@ export function CurrencyCalculator() {
     'GBP-EUR': 0.85/0.79
   };
 
+  // 백엔드 연결 상태 확인
+  useEffect(() => {
+    const checkBackendStatus = async () => {
+      try {
+        await apiService.healthCheck();
+        setIsBackendOnline(true);
+        setOfflineMode(false);
+      } catch (error) {
+        setIsBackendOnline(false);
+        setOfflineMode(true);
+      }
+    };
+
+    checkBackendStatus();
+    // 30초마다 백엔드 상태 재확인
+    const interval = setInterval(checkBackendStatus, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleConvert = async () => {
     if (!fromAmount || isNaN(parseFloat(fromAmount))) return;
     
     try {
       setIsConverting(true);
       
-      // API 호출 시도, 실패하면 목업 데이터 사용
-      try {
-        const convertResult = await convert(fromCurrency, toCurrency, parseFloat(fromAmount));
-        if (convertResult) {
-          setToAmount(convertResult.converted_amount.toLocaleString());
-          return;
+      // 오프라인 모드가 아니고 백엔드가 온라인일 때만 API 호출 시도
+      if (!offlineMode && isBackendOnline) {
+        try {
+          const convertResult = await convert(fromCurrency, toCurrency, parseFloat(fromAmount));
+          if (convertResult) {
+            setToAmount(convertResult.converted_amount.toLocaleString());
+            return;
+          }
+        } catch (apiError) {
+          console.log('API 호출 실패, 오프라인 모드로 전환:', apiError.message);
+          setOfflineMode(true);
+          setIsBackendOnline(false);
         }
-      } catch (apiError) {
-        console.log('API 호출 실패, 목업 데이터 사용:', apiError.message);
       }
       
-      // 목업 데이터로 환율 계산
+      // 오프라인 모드 또는 API 실패 시 목업 데이터 사용
       const rateKey = `${fromCurrency}-${toCurrency}`;
       const rate = mockExchangeRates[rateKey];
       
@@ -171,7 +197,8 @@ export function CurrencyCalculator() {
             </div>
           </div>
           
-          {error && (
+          {/* 오프라인 모드가 아닐 때만 에러 표시 */}
+          {!offlineMode && error && (
             <div className="text-red-600 text-sm text-center">
               환율 변환 중 오류가 발생했습니다: {error}
             </div>
@@ -180,7 +207,8 @@ export function CurrencyCalculator() {
           {toAmount && toAmount !== '변환 실패' && toAmount !== '환율 정보 없음' && (
             <div className="text-center text-sm text-gray-600">
               환율: 1 {fromCurrency} = {mockExchangeRates[`${fromCurrency}-${toCurrency}`]?.toFixed(6) || 'N/A'} {toCurrency}
-              {!result && <span className="text-xs text-gray-500 ml-2">(오프라인 모드)</span>}
+              {offlineMode && <span className="text-xs text-gray-500 ml-2">(오프라인 모드)</span>}
+              {!offlineMode && isBackendOnline && result && <span className="text-xs text-green-500 ml-2">(실시간 환율)</span>}
             </div>
           )}
         </div>
