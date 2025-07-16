@@ -13,17 +13,66 @@ export function CurrencyCalculator() {
   const { convert, result, loading, error } = useCurrencyConverter();
   const { data: exchangeRates } = useExchangeRates();
 
+  // 임시 환율 데이터 (실제 API 연동 전까지 사용)
+  const mockExchangeRates = {
+    'USD-KRW': 1340.5,
+    'KRW-USD': 1/1340.5,
+    'USD-JPY': 150,
+    'JPY-USD': 1/150,
+    'USD-EUR': 0.85,
+    'EUR-USD': 1/0.85,
+    'USD-GBP': 0.79,
+    'GBP-USD': 1/0.79,
+    'KRW-JPY': 150/1340.5,
+    'JPY-KRW': 1340.5/150,
+    'EUR-KRW': 1340.5/0.85,
+    'KRW-EUR': 0.85/1340.5,
+    'GBP-KRW': 1340.5/0.79,
+    'KRW-GBP': 0.79/1340.5,
+    'EUR-JPY': 150/0.85,
+    'JPY-EUR': 0.85/150,
+    'GBP-JPY': 150/0.79,
+    'JPY-GBP': 0.79/150,
+    'EUR-GBP': 0.79/0.85,
+    'GBP-EUR': 0.85/0.79
+  };
+
   const handleConvert = async () => {
     if (!fromAmount || isNaN(parseFloat(fromAmount))) return;
     
     try {
       setIsConverting(true);
-      const convertResult = await convert(fromCurrency, toCurrency, parseFloat(fromAmount));
-      if (convertResult) {
-        setToAmount(convertResult.converted_amount.toLocaleString());
+      
+      // API 호출 시도, 실패하면 목업 데이터 사용
+      try {
+        const convertResult = await convert(fromCurrency, toCurrency, parseFloat(fromAmount));
+        if (convertResult) {
+          setToAmount(convertResult.converted_amount.toLocaleString());
+          return;
+        }
+      } catch (apiError) {
+        console.log('API 호출 실패, 목업 데이터 사용:', apiError.message);
       }
+      
+      // 목업 데이터로 환율 계산
+      const rateKey = `${fromCurrency}-${toCurrency}`;
+      const rate = mockExchangeRates[rateKey];
+      
+      if (rate) {
+        const convertedAmount = parseFloat(fromAmount) * rate;
+        setToAmount(convertedAmount.toLocaleString());
+      } else {
+        // 같은 통화인 경우
+        if (fromCurrency === toCurrency) {
+          setToAmount(parseFloat(fromAmount).toLocaleString());
+        } else {
+          setToAmount('환율 정보 없음');
+        }
+      }
+      
     } catch (err) {
       console.error('환율 변환 실패:', err);
+      setToAmount('변환 실패');
     } finally {
       setIsConverting(false);
     }
@@ -128,9 +177,10 @@ export function CurrencyCalculator() {
             </div>
           )}
           
-          {result && (
+          {toAmount && toAmount !== '변환 실패' && toAmount !== '환율 정보 없음' && (
             <div className="text-center text-sm text-gray-600">
-              환율: 1 {fromCurrency} = {result.exchange_rate.toFixed(6)} {toCurrency}
+              환율: 1 {fromCurrency} = {mockExchangeRates[`${fromCurrency}-${toCurrency}`]?.toFixed(6) || 'N/A'} {toCurrency}
+              {!result && <span className="text-xs text-gray-500 ml-2">(오프라인 모드)</span>}
             </div>
           )}
         </div>

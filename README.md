@@ -48,14 +48,38 @@ exchange-rate-travel-app/
 └── docs/               # 문서
 ```
 
-## 🚀 시작하기
+## 🚀 빠른 시작
+
+### 즉시 체험하기 (오프라인 모드)
+
+프론트엔드만으로도 주요 기능을 체험할 수 있습니다:
+
+```bash
+# 프론트엔드 실행
+cd frontend
+npm install
+npm run dev
+```
+
+브라우저에서 `http://localhost:5173`으로 접속하면 임시 데이터로 앱을 체험할 수 있습니다.
+
+### 백엔드 서버 실행 (전체 기능)
+
+실시간 환율 데이터와 알림 기능을 사용하려면:
+
+```bash
+# 백엔드 실행
+cd backend
+pip install -r requirements.txt
+python start_local.py
+```
 
 ### 사전 요구사항
 
 - Node.js 18+
 - Python 3.11+
-- Supabase 계정
-- ExchangeRate-API 키
+- Supabase 계정 (선택사항)
+- ExchangeRate-API 키 (선택사항)
 
 ### 1. 저장소 클론
 

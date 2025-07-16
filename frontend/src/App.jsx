@@ -4,6 +4,7 @@ import { ExchangeRateCard } from './components/ExchangeRateCard'
 import { CurrencyCalculator } from './components/CurrencyCalculator'
 import { TravelContext } from './components/TravelContext'
 import { ExchangeRateChart } from './components/ExchangeRateChart'
+import { ConnectionStatus } from './components/ConnectionStatus'
 
 function App() {
   return (
@@ -18,6 +19,8 @@ function App() {
           <TravelContext />
         </div>
       </main>
+      
+      <ConnectionStatus />
     </div>
   )
 }
