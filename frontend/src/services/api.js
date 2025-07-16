@@ -103,13 +103,19 @@ class ApiService {
 
   // 환율 API
   async getExchangeRates() {
-    console.log('ApiService.getExchangeRates - API 호출 시작, baseURL:', this.baseURL);
+    console.log('=== ApiService.getExchangeRates ===');
+    console.log('API URL:', `${this.baseURL}/exchange/rates`);
+    console.log('Current time:', new Date().toISOString());
     try {
       const result = await this.request('/exchange/rates');
-      console.log('ApiService.getExchangeRates - 성공 응답:', result);
+      console.log('API 성공 응답:', result);
+      console.log('Response type:', typeof result);
+      console.log('Response keys:', Object.keys(result || {}));
       return result;
     } catch (error) {
-      console.error('ApiService.getExchangeRates - 오류:', error);
+      console.error('API 오류 상세:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       throw error;
     }
   }

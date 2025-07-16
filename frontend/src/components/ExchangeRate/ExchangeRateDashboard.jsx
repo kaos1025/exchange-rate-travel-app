@@ -15,9 +15,13 @@ export default function ExchangeRateDashboard() {
   const [displayRates, setDisplayRates] = useState(fallbackRates);
   
   // 디버깅을 위한 로그
-  console.log('ExchangeRateDashboard - apiRates:', apiRates);
-  console.log('ExchangeRateDashboard - loading:', loading);
-  console.log('ExchangeRateDashboard - error:', error);
+  console.log('=== ExchangeRateDashboard Debug ===');
+  console.log('apiRates:', apiRates);
+  console.log('loading:', loading);
+  console.log('error:', error);
+  console.log('displayRates:', displayRates);
+  console.log('Current time:', new Date().toISOString());
+  console.log('================================');
 
   useEffect(() => {
     if (apiRates && apiRates.rates) {
@@ -62,6 +66,10 @@ export default function ExchangeRateDashboard() {
           <p>Error: {error || 'none'}</p>
           <p>API Data: {apiRates ? 'received' : 'null'}</p>
           <p>Display Mode: {apiRates?.rates ? 'Real API' : 'Fallback'}</p>
+          <p>Current Time: {new Date().toLocaleTimeString()}</p>
+          <p>API Structure: {apiRates ? JSON.stringify(Object.keys(apiRates)) : 'no data'}</p>
+          <p>Display Rates Count: {displayRates.length}</p>
+          <p>Sample Rate: {displayRates[0] ? `${displayRates[0].pair}: ${displayRates[0].rate}` : 'none'}</p>
         </div>
       </div>
       

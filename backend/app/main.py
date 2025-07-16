@@ -11,7 +11,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list + [
         "https://exchange-rate-travel-app-frontend.vercel.app",
-        "https://*.vercel.app"
+        "https://exchange-rate-travel-app-frontend-kaos1025s-projects.vercel.app",
+        "https://exchange-rate-travel-app-frontend-git-master-kaos1025s-projects.vercel.app",
+        "*"  # 임시로 모든 origin 허용
     ],
     allow_credentials=True,
     allow_methods=["*"],
