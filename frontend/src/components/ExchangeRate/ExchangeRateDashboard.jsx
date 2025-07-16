@@ -11,6 +11,11 @@ const fallbackRates = [
 ];
 
 export default function ExchangeRateDashboard() {
+  // 즉시 실행되는 로그
+  console.log('🚀 ExchangeRateDashboard 컴포넌트 로드됨!');
+  console.log('Current URL:', window.location.href);
+  console.log('User Agent:', navigator.userAgent);
+  
   const { data: apiRates, loading, error, refetch } = useExchangeRates();
   const [displayRates, setDisplayRates] = useState(fallbackRates);
   
@@ -57,8 +62,41 @@ export default function ExchangeRateDashboard() {
     return currencyToCountry[currency] || currency;
   };
 
+  // 렌더링 전 로그
+  console.log('🎨 ExchangeRateDashboard 렌더링 시작');
+  
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-8">
+      <div className="bg-red-100 border border-red-400 rounded-lg p-4 mb-4">
+        <h2 className="font-bold text-red-800">테스트: 이 메시지가 보이면 JavaScript가 작동하고 있음</h2>
+        <p className="text-red-700 text-sm">Console에서 로그를 확인하세요</p>
+        <button 
+          onClick={() => {
+            console.log('👆 버튼 클릭됨!');
+            alert('JavaScript 정상 작동!');
+          }}
+          className="bg-red-500 text-white px-4 py-2 rounded mt-2"
+        >
+          클릭 테스트
+        </button>
+        <button 
+          onClick={async () => {
+            console.log('🌐 직접 API 호출 테스트');
+            try {
+              const response = await fetch('https://exchange-rate-travel-app-production.up.railway.app/exchange/rates');
+              const data = await response.json();
+              console.log('직접 API 응답:', data);
+              alert(`API 성공: USD/KRW = ${data.rates?.KRW || 'N/A'}`);
+            } catch (error) {
+              console.error('직접 API 에러:', error);
+              alert('API 에러: ' + error.message);
+            }
+          }}
+          className="bg-blue-500 text-white px-4 py-2 rounded mt-2 ml-2"
+        >
+          직접 API 호출
+        </button>
+      </div>
       <div className="text-center py-2 mb-4">
         <div className="bg-gray-100 rounded-lg p-3 text-xs font-mono">
           <p><strong>Debug Info:</strong></p>
