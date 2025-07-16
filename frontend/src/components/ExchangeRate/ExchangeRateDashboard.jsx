@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
 import ExchangeRateCard from "./ExchangeRateCard";
+import { useExchangeRates } from "../../hooks/useApi";
 
-const rates = [
+// 백업 데이터 (API 실패 시 사용)
+const fallbackRates = [
   { pair: "USD/KRW", country: "US", rate: 1340.5, diff: 12.3, diffRate: 0.93 },
   { pair: "JPY/KRW", country: "JP", rate: 8.94, diff: -0.05, diffRate: -0.56 },
   { pair: "EUR/KRW", country: "EU", rate: 1456.78, diff: 8.45, diffRate: 0.58 },
@@ -8,10 +11,63 @@ const rates = [
 ];
 
 export default function ExchangeRateDashboard() {
+  const { data: apiRates, loading, error, refetch } = useExchangeRates();
+  const [displayRates, setDisplayRates] = useState(fallbackRates);
+
+  useEffect(() => {
+    if (apiRates && apiRates.length > 0) {
+      // API 데이터를 컴포넌트에 맞는 형태로 변환
+      const transformedRates = apiRates.map(rate => ({
+        pair: `${rate.from_currency}/${rate.to_currency}`,
+        country: getCountryCode(rate.from_currency),
+        rate: rate.rate,
+        diff: rate.change_amount || 0,
+        diffRate: rate.change_percentage || 0
+      }));
+      setDisplayRates(transformedRates);
+    }
+  }, [apiRates]);
+
+  // 통화 코드를 국가 코드로 변환하는 헬퍼 함수
+  const getCountryCode = (currency) => {
+    const currencyToCountry = {
+      'USD': 'US',
+      'JPY': 'JP', 
+      'EUR': 'EU',
+      'CNY': 'CN',
+      'GBP': 'GB',
+      'AUD': 'AU',
+      'CAD': 'CA'
+    };
+    return currencyToCountry[currency] || currency;
+  };
+
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-8">
+      {loading && (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">환율 정보를 불러오는 중...</p>
+        </div>
+      )}
+      
+      {error && (
+        <div className="text-center py-4 mb-4">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p className="text-yellow-800 text-sm">실시간 환율 정보를 불러올 수 없습니다.</p>
+            <p className="text-yellow-600 text-xs mt-1">임시 데이터를 표시하고 있습니다.</p>
+            <button 
+              onClick={refetch}
+              className="mt-2 text-xs bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded transition-colors"
+            >
+              다시 시도
+            </button>
+          </div>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {rates.map((rate) => (
+        {displayRates.map((rate) => (
           <ExchangeRateCard key={rate.pair} {...rate} />
         ))}
       </div>
