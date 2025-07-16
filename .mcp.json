@@ -27,20 +27,6 @@
         "--profile",
         "hilarious-elephant-wxhkIw"
       ]
-    },
-    "playwright-mcp": {
-      "command": "wsl",
-      "args": [
-        "npx",
-        "-y",
-        "@smithery/cli@latest",
-        "run",
-        "@microsoft/playwright-mcp",
-        "--key",
-        "7f709f03-0354-4c4e-9b54-35dff68e85f2",
-        "--profile",
-        "hilarious-elephant-wxhkIw"
-      ]
     }
   }
 }
