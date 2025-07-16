@@ -1,4 +1,5 @@
 import React from 'react'
+import { LandingPage } from './components/LandingPage'
 import { MinimalHeader } from './components/MinimalHeader'
 import { ExchangeRateCard } from './components/ExchangeRateCard'
 import { CurrencyCalculator } from './components/CurrencyCalculator'
@@ -9,6 +10,12 @@ import { ToastProvider } from './components/ui/Toast'
 import { ThemeProvider } from './contexts/ThemeContext'
 
 function App() {
+  const [currentView, setCurrentView] = React.useState('landing')
+
+  if (currentView === 'landing') {
+    return <LandingPage />
+  }
+
   return (
     <ThemeProvider>
       <ToastProvider>
