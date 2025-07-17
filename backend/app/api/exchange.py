@@ -152,7 +152,7 @@ async def get_daily_rates(target_date: Optional[str] = Query(None, description="
 async def get_latest_rates_with_changes():
     """최신 환율 데이터와 변동률을 조회합니다."""
     try:
-        latest_rates = await daily_exchange_service.get_latest_rates_with_changes()
+        latest_rates, is_realtime = await daily_exchange_service.get_latest_rates_with_changes()
         
         return {
             "rates": [
@@ -165,7 +165,10 @@ async def get_latest_rates_with_changes():
                     "date": rate.date.isoformat()
                 }
                 for rate in latest_rates
-            ]
+            ],
+            "is_realtime": is_realtime,
+            "data_source": "realtime" if is_realtime else "cached",
+            "message": "실시간 환율 데이터" if is_realtime else "실시간 API 실패로 저장된 데이터 사용"
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"최신 환율 조회 실패: {str(e)}")

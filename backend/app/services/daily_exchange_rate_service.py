@@ -117,16 +117,19 @@ class DailyExchangeRateService:
             logger.error(f"Error fetching daily exchange rates: {e}")
             return []
     
-    async def get_latest_rates_with_changes(self) -> List[DailyExchangeRate]:
-        """최신 환율 데이터 및 변동률 조회"""
+    async def get_latest_rates_with_changes(self) -> tuple[List[DailyExchangeRate], bool]:
+        """최신 환율 데이터 및 변동률 조회 (실시간 API 실패 시 저장된 데이터로 폴백)"""
         try:
-            # 가장 최근 날짜 조회
+            # 먼저 오늘 날짜로 실시간 데이터 저장 시도
+            today = date.today()
+            store_success = await self.store_daily_rates(today)
+            
+            # 저장 성공 여부와 관계없이 최신 데이터 조회
             latest_date_result = self.supabase.table("daily_exchange_rates").select("date").order("date", desc=True).limit(1).execute()
             
             if not latest_date_result.data:
-                # 데이터가 없으면 오늘 날짜로 저장 시도
-                await self.store_daily_rates()
-                return await self.get_daily_rates()
+                # 저장된 데이터가 전혀 없으면 빈 리스트 반환
+                return [], store_success
             
             latest_date = latest_date_result.data[0]['date']
             
@@ -134,10 +137,23 @@ class DailyExchangeRateService:
             result = self.supabase.table("daily_exchange_rates").select("*").eq("date", latest_date).execute()
             
             if result.data:
-                return [DailyExchangeRate(**item) for item in result.data]
+                rates = [DailyExchangeRate(**item) for item in result.data]
+                return rates, store_success
             else:
-                return []
+                return [], store_success
                 
         except Exception as e:
             logger.error(f"Error fetching latest exchange rates with changes: {e}")
-            return []
+            # 예외 발생 시에도 저장된 데이터라도 조회 시도
+            try:
+                latest_date_result = self.supabase.table("daily_exchange_rates").select("date").order("date", desc=True).limit(1).execute()
+                if latest_date_result.data:
+                    latest_date = latest_date_result.data[0]['date']
+                    result = self.supabase.table("daily_exchange_rates").select("*").eq("date", latest_date).execute()
+                    if result.data:
+                        rates = [DailyExchangeRate(**item) for item in result.data]
+                        return rates, False  # 실시간 업데이트 실패
+                return [], False
+            except Exception as fallback_error:
+                logger.error(f"Fallback data fetch also failed: {fallback_error}")
+                return [], False
