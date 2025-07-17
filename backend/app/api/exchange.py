@@ -215,32 +215,16 @@ async def get_currency_pair_history(
             # 데이터베이스 연결 실패 시 테스트 데이터 생성
             result = None
         
-        if not result or not result.data or len(result.data) < 2:
-            # 데이터가 없으면 테스트 히스토리 데이터 생성
-            test_history = []
-            base_rate = 1387.70 if from_currency == "USD" and to_currency == "KRW" else 1000
-            
-            for i in range(days):
-                current_date = start_date + timedelta(days=i)
-                # 간단한 변동 시뮬레이션
-                variation = (i % 7 - 3) * 10  # -30 ~ +30 범위의 변동
-                rate = base_rate + variation
-                
-                test_history.append({
-                    "date": current_date.isoformat(),
-                    "rate": rate,
-                    "change_amount": variation,
-                    "change_percentage": (variation / base_rate) * 100
-                })
-            
+        if not result or not result.data:
+            # 데이터가 없으면 빈 배열 반환
             return {
                 "currency_pair": currency_pair,
                 "period_days": days,
                 "start_date": start_date.isoformat(),
                 "end_date": end_date.isoformat(),
-                "data": test_history,
-                "data_source": "test",
-                "message": "테스트 히스토리 데이터입니다"
+                "data": [],
+                "data_source": "database",
+                "message": "요청한 기간에 대한 환율 히스토리 데이터가 없습니다"
             }
         
         return {

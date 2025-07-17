@@ -147,8 +147,9 @@ export function ExchangeRateChart({
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <div className="text-gray-400 text-4xl mb-4">📊</div>
-                <p className="text-gray-500 mb-2">차트 데이터가 없습니다</p>
-                <p className="text-gray-400 text-sm">데이터를 준비하고 있습니다</p>
+                <p className="text-gray-500 mb-2">환율 히스토리 데이터가 없습니다</p>
+                <p className="text-gray-400 text-sm">({currencyPair} {days}일간)</p>
+                <p className="text-gray-400 text-sm mt-2">데이터가 수집되면 차트가 표시됩니다</p>
               </div>
             </div>
           ) : (
