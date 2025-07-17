@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import date, datetime
 from pydantic import BaseModel
 from ..services.exchange_rate import ExchangeRateService
