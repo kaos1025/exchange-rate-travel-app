@@ -81,7 +81,17 @@ class DailyExchangeRateService:
                     date=target_date
                 )
                 
-                stored_rates.append(daily_rate.model_dump())
+                # Decimal 타입을 float로 변환하여 JSON 직렬화 가능하도록 변환
+                rate_dict = daily_rate.model_dump()
+                rate_dict['rate'] = float(rate_dict['rate'])
+                if rate_dict['previous_rate'] is not None:
+                    rate_dict['previous_rate'] = float(rate_dict['previous_rate'])
+                if rate_dict['change_amount'] is not None:
+                    rate_dict['change_amount'] = float(rate_dict['change_amount'])
+                if rate_dict['change_percentage'] is not None:
+                    rate_dict['change_percentage'] = float(rate_dict['change_percentage'])
+                
+                stored_rates.append(rate_dict)
             
             # DB에 저장
             result = self.supabase.table("daily_exchange_rates").insert(stored_rates).execute()
