@@ -215,7 +215,7 @@ async def get_currency_pair_history(
             # 데이터베이스 연결 실패 시 테스트 데이터 생성
             result = None
         
-        if not result or not result.data:
+        if not result or not result.data or len(result.data) < 2:
             # 데이터가 없으면 테스트 히스토리 데이터 생성
             test_history = []
             base_rate = 1387.70 if from_currency == "USD" and to_currency == "KRW" else 1000
