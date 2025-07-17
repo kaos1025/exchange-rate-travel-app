@@ -42,10 +42,13 @@ export default function ExchangeRateDashboard() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">실시간 환율 정보</h1>
-        <p className="text-gray-600">주요 통화의 원화 환율과 변동률을 확인하세요</p>
+    <div className="w-full max-w-6xl mx-auto px-4 py-8 bg-gradient-to-br from-gray-50 to-white min-h-screen">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+          실시간 환율 정보
+        </h1>
+        <p className="text-gray-600 text-lg">주요 통화의 원화 환율과 변동률을 확인하세요</p>
+        <div className="w-24 h-1 bg-gradient-to-r from-blue-400 to-purple-400 mx-auto mt-4 rounded-full"></div>
       </div>
       
       {loading && (
@@ -56,11 +59,14 @@ export default function ExchangeRateDashboard() {
       )}
       
       {latestRates && !loading && (
-        <div className="text-center py-2 mb-4">
-          <p className={`text-xs ${latestRates.is_realtime ? 'text-green-600' : 'text-orange-600'}`}>
-            {latestRates.is_realtime ? '✅ 실시간 환율 데이터' : '⚠️ 저장된 환율 데이터'} (변동률 포함)
-          </p>
-          <p className="text-xs text-gray-500 mt-1">{latestRates.message}</p>
+        <div className="text-center mb-8">
+          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${latestRates.is_realtime ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+            <span className="text-base">
+              {latestRates.is_realtime ? '🟢' : '🟡'}
+            </span>
+            {latestRates.is_realtime ? '실시간 환율 데이터' : '저장된 환율 데이터'}
+          </div>
+          <p className="text-xs text-gray-500 mt-2">{latestRates.message}</p>
         </div>
       )}
       
@@ -80,7 +86,7 @@ export default function ExchangeRateDashboard() {
         </div>
       )}
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {displayRates.length > 0 ? (
           displayRates.map((rate) => (
             <ExchangeRateCard key={rate.pair} {...rate} />
