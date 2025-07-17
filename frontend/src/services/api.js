@@ -131,6 +131,50 @@ class ApiService {
     return await this.request(`/exchange/convert?${params}`)
   }
 
+  // 최신 환율 데이터 및 변동률 조회
+  async getLatestRatesWithChanges() {
+    console.log('=== ApiService.getLatestRatesWithChanges ===');
+    console.log('API URL:', `${this.baseURL}/exchange/rates/latest`);
+    try {
+      const result = await this.request('/exchange/rates/latest');
+      console.log('최신 환율 API 성공 응답:', result);
+      return result;
+    } catch (error) {
+      console.error('최신 환율 API 오류:', error);
+      throw error;
+    }
+  }
+
+  // 일일 환율 데이터 조회
+  async getDailyRates(targetDate = null) {
+    console.log('=== ApiService.getDailyRates ===');
+    const params = targetDate ? `?target_date=${targetDate}` : '';
+    console.log('API URL:', `${this.baseURL}/exchange/rates/daily${params}`);
+    try {
+      const result = await this.request(`/exchange/rates/daily${params}`);
+      console.log('일일 환율 API 성공 응답:', result);
+      return result;
+    } catch (error) {
+      console.error('일일 환율 API 오류:', error);
+      throw error;
+    }
+  }
+
+  // 수동 일일 환율 저장 (테스트용)
+  async storeDailyRates() {
+    console.log('=== ApiService.storeDailyRates ===');
+    try {
+      const result = await this.request('/exchange/rates/store', {
+        method: 'POST'
+      });
+      console.log('일일 환율 저장 API 성공 응답:', result);
+      return result;
+    } catch (error) {
+      console.error('일일 환율 저장 API 오류:', error);
+      throw error;
+    }
+  }
+
   // 알림 설정 API
   async getAlerts() {
     return await this.request('/alerts')

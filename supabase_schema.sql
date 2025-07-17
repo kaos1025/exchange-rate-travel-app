@@ -32,6 +32,20 @@ CREATE TABLE exchange_rates (
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Daily exchange rates table for consistent daily snapshots
+CREATE TABLE daily_exchange_rates (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    currency_from VARCHAR(3) NOT NULL,
+    currency_to VARCHAR(3) NOT NULL,
+    rate DECIMAL(15,6) NOT NULL,
+    previous_rate DECIMAL(15,6),
+    change_amount DECIMAL(15,6),
+    change_percentage DECIMAL(8,4),
+    date DATE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(currency_from, currency_to, date)
+);
+
 -- Notification history
 CREATE TABLE notification_history (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -47,6 +61,9 @@ CREATE INDEX idx_alert_settings_user_id ON alert_settings(user_id);
 CREATE INDEX idx_alert_settings_active ON alert_settings(is_active) WHERE is_active = true;
 CREATE INDEX idx_exchange_rates_currency_pair ON exchange_rates(currency_from, currency_to);
 CREATE INDEX idx_exchange_rates_timestamp ON exchange_rates(timestamp);
+CREATE INDEX idx_daily_exchange_rates_currency_pair ON daily_exchange_rates(currency_from, currency_to);
+CREATE INDEX idx_daily_exchange_rates_date ON daily_exchange_rates(date);
+CREATE INDEX idx_daily_exchange_rates_lookup ON daily_exchange_rates(currency_from, currency_to, date);
 
 -- RLS (Row Level Security) policies
 ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;

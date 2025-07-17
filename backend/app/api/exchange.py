@@ -1,10 +1,14 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
+from datetime import date
 from pydantic import BaseModel
 from ..services.exchange_rate import ExchangeRateService
+from ..services.daily_exchange_rate_service import DailyExchangeRateService
+from ..services.monitoring_service import get_monitoring_service
 
 router = APIRouter(prefix="/exchange", tags=["exchange"])
 exchange_service = ExchangeRateService()
+daily_exchange_service = DailyExchangeRateService()
 
 class ConversionRequest(BaseModel):
     amount: float
@@ -116,3 +120,62 @@ async def get_popular_rates():
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"인기 환율 조회 실패: {str(e)}")
+
+@router.get("/rates/daily")
+async def get_daily_rates(target_date: Optional[str] = Query(None, description="조회할 날짜 (YYYY-MM-DD)")):
+    """일일 환율 데이터를 조회합니다."""
+    try:
+        if target_date:
+            query_date = date.fromisoformat(target_date)
+        else:
+            query_date = None
+        
+        daily_rates = await daily_exchange_service.get_daily_rates(query_date)
+        
+        return {
+            "date": query_date.isoformat() if query_date else date.today().isoformat(),
+            "rates": [
+                {
+                    "currency_pair": f"{rate.currency_from}/{rate.currency_to}",
+                    "rate": float(rate.rate),
+                    "previous_rate": float(rate.previous_rate) if rate.previous_rate else None,
+                    "change_amount": float(rate.change_amount) if rate.change_amount else 0,
+                    "change_percentage": float(rate.change_percentage) if rate.change_percentage else 0
+                }
+                for rate in daily_rates
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"일일 환율 조회 실패: {str(e)}")
+
+@router.get("/rates/latest")
+async def get_latest_rates_with_changes():
+    """최신 환율 데이터와 변동률을 조회합니다."""
+    try:
+        latest_rates = await daily_exchange_service.get_latest_rates_with_changes()
+        
+        return {
+            "rates": [
+                {
+                    "currency_pair": f"{rate.currency_from}/{rate.currency_to}",
+                    "rate": float(rate.rate),
+                    "previous_rate": float(rate.previous_rate) if rate.previous_rate else None,
+                    "change_amount": float(rate.change_amount) if rate.change_amount else 0,
+                    "change_percentage": float(rate.change_percentage) if rate.change_percentage else 0,
+                    "date": rate.date.isoformat()
+                }
+                for rate in latest_rates
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"최신 환율 조회 실패: {str(e)}")
+
+@router.post("/rates/store")
+async def store_daily_rates():
+    """수동으로 일일 환율을 저장합니다. (테스트용)"""
+    try:
+        monitoring_service = get_monitoring_service()
+        result = await monitoring_service.manual_store_daily_rates()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"일일 환율 저장 실패: {str(e)}")

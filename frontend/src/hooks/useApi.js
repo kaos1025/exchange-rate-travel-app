@@ -58,6 +58,32 @@ export const useExchangeRates = () => {
   return result;
 }
 
+// 최신 환율 데이터 및 변동률 훅
+export const useLatestRatesWithChanges = () => {
+  console.log('🎯 useLatestRatesWithChanges 훅 실행!');
+  
+  const result = useApiCall(() => {
+    console.log('🚀 useLatestRatesWithChanges - API 호출 시작');
+    return apiService.getLatestRatesWithChanges();
+  });
+  
+  console.log('📊 useLatestRatesWithChanges - 결과:', result);
+  return result;
+}
+
+// 일일 환율 데이터 훅
+export const useDailyRates = (targetDate = null) => {
+  console.log('🎯 useDailyRates 훅 실행!');
+  
+  const result = useApiCall(() => {
+    console.log('🚀 useDailyRates - API 호출 시작');
+    return apiService.getDailyRates(targetDate);
+  }, [targetDate]);
+  
+  console.log('📊 useDailyRates - 결과:', result);
+  return result;
+}
+
 // 환율 변환 훅
 export const useCurrencyConverter = () => {
   const [result, setResult] = useState(null)

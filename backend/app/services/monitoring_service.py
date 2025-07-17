@@ -1,6 +1,7 @@
 import asyncio
 import threading
 import time
+import schedule
 from datetime import datetime, timedelta
 from typing import Dict, List
 import logging
@@ -8,6 +9,7 @@ import logging
 from .alert_service import AlertService
 from .exchange_rate import ExchangeRateService
 from .notification import NotificationService
+from .daily_exchange_rate_service import DailyExchangeRateService
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -20,9 +22,16 @@ class ExchangeRateMonitoringService:
         self.alert_service = AlertService()
         self.exchange_service = ExchangeRateService()
         self.notification_service = NotificationService()
+        self.daily_exchange_service = DailyExchangeRateService()
         self.is_running = False
         self.monitoring_thread = None
+        self.scheduler_thread = None
         self.check_interval = 300  # 5분마다 확인
+        self._setup_daily_schedule()
+    
+    def _setup_daily_schedule(self):
+        """일일 환율 저장 스케줄 설정"""
+        schedule.every().day.at("00:00").do(self._store_daily_rates_job)
         
     def start_monitoring(self):
         """모니터링 시작"""
@@ -32,7 +41,9 @@ class ExchangeRateMonitoringService:
         
         self.is_running = True
         self.monitoring_thread = threading.Thread(target=self._run_monitoring_loop, daemon=True)
+        self.scheduler_thread = threading.Thread(target=self._run_scheduler_loop, daemon=True)
         self.monitoring_thread.start()
+        self.scheduler_thread.start()
         logger.info("환율 모니터링 서비스가 시작되었습니다")
     
     def stop_monitoring(self):
@@ -40,6 +51,8 @@ class ExchangeRateMonitoringService:
         self.is_running = False
         if self.monitoring_thread:
             self.monitoring_thread.join(timeout=10)
+        if self.scheduler_thread:
+            self.scheduler_thread.join(timeout=10)
         logger.info("환율 모니터링 서비스가 중지되었습니다")
     
     def _run_monitoring_loop(self):
@@ -58,6 +71,35 @@ class ExchangeRateMonitoringService:
             except Exception as e:
                 logger.error(f"모니터링 중 오류 발생: {e}")
                 time.sleep(60)  # 오류 발생 시 1분 대기
+    
+    def _run_scheduler_loop(self):
+        """스케줄러 루프 실행"""
+        while self.is_running:
+            try:
+                schedule.run_pending()
+                time.sleep(60)  # 1분마다 스케줄 확인
+            except Exception as e:
+                logger.error(f"스케줄러 중 오류 발생: {e}")
+                time.sleep(60)
+    
+    def _store_daily_rates_job(self):
+        """일일 환율 저장 작업 (스케줄러용)"""
+        try:
+            asyncio.run(self._store_daily_rates())
+        except Exception as e:
+            logger.error(f"일일 환율 저장 중 오류: {e}")
+    
+    async def _store_daily_rates(self):
+        """일일 환율 저장"""
+        try:
+            logger.info("일일 환율 데이터 저장 시작...")
+            success = await self.daily_exchange_service.store_daily_rates()
+            if success:
+                logger.info("일일 환율 데이터 저장 완료")
+            else:
+                logger.error("일일 환율 데이터 저장 실패")
+        except Exception as e:
+            logger.error(f"일일 환율 저장 중 오류: {e}")
     
     async def _check_alerts(self):
         """알림 조건 확인 및 발송"""
@@ -122,8 +164,29 @@ class ExchangeRateMonitoringService:
             "check_interval_seconds": self.check_interval,
             "active_alerts_count": len(active_alerts),
             "last_check": datetime.now().isoformat(),
-            "thread_alive": self.monitoring_thread.is_alive() if self.monitoring_thread else False
+            "thread_alive": self.monitoring_thread.is_alive() if self.monitoring_thread else False,
+            "scheduler_alive": self.scheduler_thread.is_alive() if self.scheduler_thread else False
         }
+    
+    async def manual_store_daily_rates(self) -> Dict:
+        """수동으로 일일 환율 저장 (테스트용)"""
+        try:
+            start_time = datetime.now()
+            success = await self.daily_exchange_service.store_daily_rates()
+            end_time = datetime.now()
+            
+            return {
+                "success": success,
+                "start_time": start_time.isoformat(),
+                "end_time": end_time.isoformat(),
+                "duration_seconds": (end_time - start_time).total_seconds()
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e),
+                "timestamp": datetime.now().isoformat()
+            }
     
     async def manual_check(self) -> Dict:
         """수동 알림 확인 (테스트용)"""
