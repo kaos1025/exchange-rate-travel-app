@@ -81,7 +81,7 @@ class DailyExchangeRateService:
                     date=target_date
                 )
                 
-                # Decimal 타입을 float로 변환하여 JSON 직렬화 가능하도록 변환
+                # Decimal 타입을 float로, date 타입을 문자열로 변환하여 JSON 직렬화 가능하도록 변환
                 rate_dict = daily_rate.model_dump()
                 rate_dict['rate'] = float(rate_dict['rate'])
                 if rate_dict['previous_rate'] is not None:
@@ -90,6 +90,7 @@ class DailyExchangeRateService:
                     rate_dict['change_amount'] = float(rate_dict['change_amount'])
                 if rate_dict['change_percentage'] is not None:
                     rate_dict['change_percentage'] = float(rate_dict['change_percentage'])
+                rate_dict['date'] = rate_dict['date'].isoformat()  # date 타입을 ISO 문자열로 변환
                 
                 stored_rates.append(rate_dict)
             
