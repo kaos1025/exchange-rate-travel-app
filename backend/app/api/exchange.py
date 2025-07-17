@@ -208,6 +208,140 @@ async def get_stored_rates():
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"저장된 환율 조회 실패: {str(e)}")
 
+@router.get("/rates/history/{currency_pair}", response_model=Dict)
+async def get_exchange_rate_history(
+    currency_pair: str,
+    days: int = Query(30, ge=1, le=365, description="조회할 일수 (1-365)")
+):
+    """특정 통화 쌍의 환율 히스토리 조회"""
+    try:
+        # 통화 쌍 파싱 (예: USD/KRW -> USD, KRW)
+        if '/' not in currency_pair:
+            raise HTTPException(status_code=400, detail="통화 쌍 형식이 올바르지 않습니다. (예: USD/KRW)")
+        
+        from_currency, to_currency = currency_pair.split('/')
+        
+        # 최근 N일간의 데이터 조회
+        from datetime import date, timedelta
+        end_date = date.today()
+        start_date = end_date - timedelta(days=days-1)
+        
+        result = daily_exchange_service.supabase.table("daily_exchange_rates").select(
+            "date, rate, change_amount, change_percentage"
+        ).eq("currency_from", from_currency).eq("currency_to", to_currency).gte(
+            "date", start_date.isoformat()
+        ).lte("date", end_date.isoformat()).order("date", desc=False).execute()
+        
+        if not result.data:
+            # 데이터가 없으면 테스트 히스토리 데이터 생성
+            test_history = []
+            base_rate = 1387.70 if from_currency == "USD" and to_currency == "KRW" else 1000
+            
+            for i in range(days):
+                current_date = start_date + timedelta(days=i)
+                # 간단한 변동 시뮬레이션
+                variation = (i % 7 - 3) * 10  # -30 ~ +30 범위의 변동
+                rate = base_rate + variation
+                
+                test_history.append({
+                    "date": current_date.isoformat(),
+                    "rate": rate,
+                    "change_amount": variation,
+                    "change_percentage": (variation / base_rate) * 100
+                })
+            
+            return {
+                "currency_pair": currency_pair,
+                "period_days": days,
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+                "data": test_history,
+                "data_source": "test",
+                "message": "테스트 히스토리 데이터입니다"
+            }
+        
+        return {
+            "currency_pair": currency_pair,
+            "period_days": days,
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "data": result.data,
+            "data_source": "database",
+            "message": f"{len(result.data)}개의 히스토리 데이터를 조회했습니다"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"환율 히스토리 조회 실패: {str(e)}")
+
+@router.get("/convert", response_model=Dict)
+async def convert_currency(
+    from_currency: str = Query(..., description="변환할 통화 (예: USD)"),
+    to_currency: str = Query(..., description="변환 대상 통화 (예: KRW)"),
+    amount: float = Query(..., gt=0, description="변환할 금액")
+):
+    """실시간 환율을 사용한 통화 변환"""
+    try:
+        # 최신 환율 데이터 조회
+        rates, is_realtime = await daily_exchange_service.get_latest_rates_with_changes()
+        
+        if not rates:
+            raise HTTPException(status_code=404, detail="환율 데이터를 찾을 수 없습니다")
+        
+        # 환율 데이터를 딕셔너리로 변환
+        rate_dict = {}
+        for rate in rates:
+            key = f"{rate.currency_from}-{rate.currency_to}"
+            rate_dict[key] = float(rate.rate)
+        
+        # 변환 로직
+        converted_amount = None
+        used_rate = None
+        
+        if from_currency == to_currency:
+            # 같은 통화면 그대로 반환
+            converted_amount = amount
+            used_rate = 1.0
+        else:
+            # 직접 환율 찾기
+            direct_key = f"{from_currency}-{to_currency}"
+            if direct_key in rate_dict:
+                used_rate = rate_dict[direct_key]
+                converted_amount = amount * used_rate
+            else:
+                # 역방향 환율 찾기
+                reverse_key = f"{to_currency}-{from_currency}"
+                if reverse_key in rate_dict:
+                    used_rate = 1.0 / rate_dict[reverse_key]
+                    converted_amount = amount * used_rate
+                else:
+                    # KRW를 중간 통화로 사용
+                    from_to_krw = f"{from_currency}-KRW"
+                    krw_to_to = f"KRW-{to_currency}"
+                    
+                    if from_to_krw in rate_dict and krw_to_to in rate_dict:
+                        krw_amount = amount * rate_dict[from_to_krw]
+                        converted_amount = krw_amount * rate_dict[krw_to_to]
+                        used_rate = rate_dict[from_to_krw] * rate_dict[krw_to_to]
+                    else:
+                        raise HTTPException(
+                            status_code=400, 
+                            detail=f"{from_currency}에서 {to_currency}로의 환율을 찾을 수 없습니다"
+                        )
+        
+        return {
+            "amount": amount,
+            "from_currency": from_currency,
+            "to_currency": to_currency,
+            "rate": used_rate,
+            "converted_amount": round(converted_amount, 6),
+            "is_realtime": is_realtime,
+            "timestamp": datetime.now().isoformat(),
+            "data_source": "realtime" if is_realtime else "stored"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"환율 변환 실패: {str(e)}")
+
 @router.post("/rates/store")
 async def store_daily_rates():
     """수동으로 일일 환율을 저장합니다. (테스트용)"""

@@ -4,6 +4,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/Select';
 import { ArrowUpDown, Calculator } from 'lucide-react';
+import { useCurrencyConverter } from '../../hooks/useApi';
 
 const POPULAR_CURRENCIES = [
   { code: 'USD', name: 'US Dollar', symbol: '$' },
@@ -18,68 +19,28 @@ export function CurrencyConverter() {
   const [amount, setAmount] = useState('100');
   const [fromCurrency, setFromCurrency] = useState('USD');
   const [toCurrency, setToCurrency] = useState('KRW');
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  
+  // 실제 API 훅 사용
+  const { result, loading, error, convert, clearError } = useCurrencyConverter();
 
   const convertCurrency = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      setError('올바른 금액을 입력해주세요.');
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
+    // 실제 API 호출
     try {
-      // 목업 환율 데이터 (실제 API 대신 사용)
-      const mockRates = {
-        'USD-KRW': 1318.50,
-        'KRW-USD': 0.000757,
-        'EUR-KRW': 1450.30,
-        'KRW-EUR': 0.000689,
-        'JPY-KRW': 8.95,
-        'KRW-JPY': 0.112,
-        'GBP-KRW': 1680.75,
-        'KRW-GBP': 0.000595,
-        'CNY-KRW': 185.20,
-        'KRW-CNY': 0.0054,
-        'USD-EUR': 0.91,
-        'EUR-USD': 1.10,
-        'USD-JPY': 147.50,
-        'JPY-USD': 0.0068,
-        'USD-GBP': 0.79,
-        'GBP-USD': 1.27
-      };
-
-      // 2초 대기 (실제 API 호출 시뮬레이션)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const rateKey = `${fromCurrency}-${toCurrency}`;
-      const rate = mockRates[rateKey] || 1;
-      const convertedAmount = parseFloat(amount) * rate;
-
-      const result = {
-        amount: parseFloat(amount),
-        from_currency: fromCurrency,
-        to_currency: toCurrency,
-        rate: rate,
-        converted_amount: convertedAmount,
-        timestamp: new Date().toISOString()
-      };
-
-      setResult(result);
+      await convert(fromCurrency, toCurrency, parseFloat(amount));
     } catch (err) {
-      setError('환율 변환에 실패했습니다.');
-    } finally {
-      setLoading(false);
+      // 에러는 useCurrencyConverter 훅에서 처리
+      console.error('환율 변환 오류:', err);
     }
   };
 
   const swapCurrencies = () => {
     setFromCurrency(toCurrency);
     setToCurrency(fromCurrency);
-    setResult(null);
+    clearError();
   };
 
   const formatCurrency = (value, currency) => {
@@ -198,6 +159,9 @@ export function CurrencyConverter() {
             <div className="border-t border-blue-200 pt-3 space-y-1">
               <div className="text-sm text-blue-700 font-medium text-center">
                 📊 환율: 1 {result.from_currency} = {result.rate.toFixed(6)} {result.to_currency}
+              </div>
+              <div className="text-xs text-blue-500 text-center">
+                💹 {result.data_source === 'realtime' ? '실시간' : '저장된'} 환율 데이터 사용
               </div>
               <div className="text-xs text-blue-500 text-center">
                 🕐 {new Date(result.timestamp).toLocaleString('ko-KR')}

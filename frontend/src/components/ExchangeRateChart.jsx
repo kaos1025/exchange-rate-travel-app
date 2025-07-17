@@ -2,36 +2,37 @@ import React, { useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 import { Card, CardContent } from './ui/Card'
 import { TrendingUp, TrendingDown, Calendar } from 'lucide-react'
-
-// Mock 데이터 생성 함수 제거됨 - 실제 API 데이터 사용 필요
+import { useExchangeRateHistory } from '../hooks/useApi'
 
 export function ExchangeRateChart({ 
   currencyPair = 'USD/KRW',
   period = '30D',
   chartType: initialChartType = 'line' 
 }) {
-  const [data, setData] = useState([])
-  const [loading, setLoading] = useState(true)
   const [selectedPeriod, setSelectedPeriod] = useState(period)
   const [chartType, setChartType] = useState(initialChartType)
-
-  useEffect(() => {
-    // Mock 데이터 제거됨 - 실제 API 연결 필요
-    const fetchData = async () => {
-      setLoading(true)
-      // 실제 API 호출 대신 빈 데이터 설정
-      setData([])
-      setLoading(false)
-    }
-
-    fetchData()
-  }, [selectedPeriod])
+  
+  // 기간에 따른 일수 계산
+  const days = selectedPeriod === '7D' ? 7 : selectedPeriod === '30D' ? 30 : 90
+  
+  // 실제 API 데이터 조회
+  const { data: historyData, loading, error } = useExchangeRateHistory(currencyPair, days)
+  
+  // 차트에 사용할 데이터 변환
+  const chartData = historyData?.data?.map(item => ({
+    date: item.date,
+    rate: parseFloat(item.rate),
+    formattedDate: new Date(item.date).toLocaleDateString('ko-KR', { 
+      month: 'short', 
+      day: 'numeric' 
+    })
+  })) || []
 
   const calculateChange = () => {
-    if (data.length < 2) return { change: 0, percentage: 0, isPositive: true }
+    if (chartData.length < 2) return { change: 0, percentage: 0, isPositive: true }
     
-    const latest = data[data.length - 1].rate
-    const previous = data[data.length - 2].rate
+    const latest = chartData[chartData.length - 1].rate
+    const previous = chartData[chartData.length - 2].rate
     const change = latest - previous
     const percentage = (change / previous) * 100
     
@@ -43,7 +44,7 @@ export function ExchangeRateChart({
   }
 
   const { change, percentage, isPositive } = calculateChange()
-  const latestRate = data.length > 0 ? data[data.length - 1].rate : 0
+  const latestRate = chartData.length > 0 ? chartData[chartData.length - 1].rate : 0
 
   const periods = [
     { value: '7D', label: '7일' },
@@ -124,64 +125,82 @@ export function ExchangeRateChart({
 
         {/* 차트 */}
         <div className="h-96">
-          <ResponsiveContainer width="100%" height="100%">
-            {chartType === 'area' ? (
-              <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="formattedDate" 
-                  stroke="#666"
-                  fontSize={12}
-                  tick={{ fill: '#666' }}
-                />
-                <YAxis 
-                  stroke="#666"
-                  fontSize={12}
-                  tick={{ fill: '#666' }}
-                  tickFormatter={(value) => value.toLocaleString()}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  dataKey="rate"
-                  stroke="#3B82F6"
-                  strokeWidth={2}
-                  fill="url(#colorGradient)"
-                />
-                <defs>
-                  <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-              </AreaChart>
-            ) : (
-              <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="formattedDate" 
-                  stroke="#666"
-                  fontSize={12}
-                  tick={{ fill: '#666' }}
-                />
-                <YAxis 
-                  stroke="#666"
-                  fontSize={12}
-                  tick={{ fill: '#666' }}
-                  tickFormatter={(value) => value.toLocaleString()}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Line
-                  type="monotone"
-                  dataKey="rate"
-                  stroke="#3B82F6"
-                  strokeWidth={2}
-                  dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2 }}
-                />
-              </LineChart>
-            )}
-          </ResponsiveContainer>
+          {error ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="text-red-500 text-4xl mb-4">⚠️</div>
+                <p className="text-red-600 mb-2">차트 데이터를 불러올 수 없습니다</p>
+                <p className="text-gray-500 text-sm">잠시 후 다시 시도해주세요</p>
+              </div>
+            </div>
+          ) : chartData.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="text-gray-400 text-4xl mb-4">📊</div>
+                <p className="text-gray-500 mb-2">차트 데이터가 없습니다</p>
+                <p className="text-gray-400 text-sm">데이터를 준비하고 있습니다</p>
+              </div>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              {chartType === 'area' ? (
+                <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="formattedDate" 
+                    stroke="#666"
+                    fontSize={12}
+                    tick={{ fill: '#666' }}
+                  />
+                  <YAxis 
+                    stroke="#666"
+                    fontSize={12}
+                    tick={{ fill: '#666' }}
+                    tickFormatter={(value) => value.toLocaleString()}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="rate"
+                    stroke="#3B82F6"
+                    strokeWidth={2}
+                    fill="url(#colorGradient)"
+                  />
+                  <defs>
+                    <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                </AreaChart>
+              ) : (
+                <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="formattedDate" 
+                    stroke="#666"
+                    fontSize={12}
+                    tick={{ fill: '#666' }}
+                  />
+                  <YAxis 
+                    stroke="#666"
+                    fontSize={12}
+                    tick={{ fill: '#666' }}
+                    tickFormatter={(value) => value.toLocaleString()}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Line
+                    type="monotone"
+                    dataKey="rate"
+                    stroke="#3B82F6"
+                    strokeWidth={2}
+                    dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: '#3B82F6', strokeWidth: 2 }}
+                  />
+                </LineChart>
+              )}
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* 차트 컨트롤 */}
@@ -211,26 +230,37 @@ export function ExchangeRateChart({
         </div>
 
         {/* 통계 정보 */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
-          <div className="text-center">
-            <p className="text-sm text-gray-600">최고가</p>
-            <p className="text-lg font-semibold text-gray-900">
-              {Math.max(...data.map(d => d.rate)).toLocaleString()}
+        {chartData.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
+            <div className="text-center">
+              <p className="text-sm text-gray-600">최고가</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {Math.max(...chartData.map(d => d.rate)).toLocaleString()}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-600">최저가</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {Math.min(...chartData.map(d => d.rate)).toLocaleString()}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-gray-600">평균가</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {(chartData.reduce((sum, d) => sum + d.rate, 0) / chartData.length).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 데이터 소스 정보 */}
+        {historyData && (
+          <div className="mt-4 text-center">
+            <p className="text-xs text-gray-500">
+              📊 {historyData.data_source === 'test' ? '테스트' : '실제'} 데이터 | {historyData.message}
             </p>
           </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600">최저가</p>
-            <p className="text-lg font-semibold text-gray-900">
-              {Math.min(...data.map(d => d.rate)).toLocaleString()}
-            </p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600">평균가</p>
-            <p className="text-lg font-semibold text-gray-900">
-              {(data.reduce((sum, d) => sum + d.rate, 0) / data.length).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            </p>
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   )

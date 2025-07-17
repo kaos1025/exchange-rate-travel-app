@@ -58,6 +58,15 @@ export const useStoredRates = () => {
   return result;
 }
 
+// 환율 히스토리 데이터 조회 훅
+export const useExchangeRateHistory = (currencyPair, days = 30) => {
+  const result = useApiCall(() => {
+    return apiService.getExchangeRateHistory(currencyPair, days);
+  }, [currencyPair, days]);
+  
+  return result;
+}
+
 // 일일 환율 데이터 훅
 export const useDailyRates = (targetDate = null) => {
   const result = useApiCall(() => {

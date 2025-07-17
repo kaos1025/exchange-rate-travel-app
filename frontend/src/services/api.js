@@ -108,8 +108,8 @@ class ApiService {
 
   async convertCurrency(from, to, amount) {
     const params = new URLSearchParams({
-      from,
-      to,
+      from_currency: from,
+      to_currency: to,
       amount: amount.toString()
     })
     return await this.request(`/exchange/convert?${params}`)
@@ -123,6 +123,11 @@ class ApiService {
   // 저장된 환율 데이터만 조회 (실시간 API 호출 없음)
   async getStoredRates() {
     return await this.request('/exchange/rates/stored');
+  }
+
+  // 환율 히스토리 데이터 조회
+  async getExchangeRateHistory(currencyPair, days = 30) {
+    return await this.request(`/exchange/rates/history/${currencyPair}?days=${days}`);
   }
 
   // 일일 환율 데이터 조회
