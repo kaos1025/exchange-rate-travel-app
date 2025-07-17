@@ -128,8 +128,12 @@ class DailyExchangeRateService:
             latest_date_result = self.supabase.table("daily_exchange_rates").select("date").order("date", desc=True).limit(1).execute()
             
             if not latest_date_result.data:
-                # 저장된 데이터가 전혀 없으면 빈 리스트 반환
-                return [], store_success
+                # 저장된 데이터가 전혀 없으면 테스트 데이터 삽입
+                await self._insert_test_data()
+                # 다시 조회
+                latest_date_result = self.supabase.table("daily_exchange_rates").select("date").order("date", desc=True).limit(1).execute()
+                if not latest_date_result.data:
+                    return [], store_success
             
             latest_date = latest_date_result.data[0]['date']
             
@@ -153,6 +157,16 @@ class DailyExchangeRateService:
                     if result.data:
                         rates = [DailyExchangeRate(**item) for item in result.data]
                         return rates, False  # 실시간 업데이트 실패
+                else:
+                    # 저장된 데이터가 없으면 테스트 데이터 삽입
+                    await self._insert_test_data()
+                    latest_date_result = self.supabase.table("daily_exchange_rates").select("date").order("date", desc=True).limit(1).execute()
+                    if latest_date_result.data:
+                        latest_date = latest_date_result.data[0]['date']
+                        result = self.supabase.table("daily_exchange_rates").select("*").eq("date", latest_date).execute()
+                        if result.data:
+                            rates = [DailyExchangeRate(**item) for item in result.data]
+                            return rates, False
                 return [], False
             except Exception as fallback_error:
                 logger.error(f"Fallback data fetch also failed: {fallback_error}")
