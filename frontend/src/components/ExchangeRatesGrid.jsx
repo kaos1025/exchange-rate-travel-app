@@ -5,47 +5,8 @@ export function ExchangeRatesGrid() {
   // API에서 실제 환율 데이터 가져오기
   const { data: apiRates, loading, error } = useExchangeRates();
   
-  // 기본값 (API 실패 시 사용)
-  const fallbackRates = [
-    {
-      id: 1,
-      currencyPair: 'USD/KRW',
-      flag: '🇺🇸',
-      rate: 1340.50,
-      change: 12.30,
-      changePercent: 0.93,
-      isPositive: true
-    },
-    {
-      id: 2,
-      currencyPair: 'JPY/KRW',
-      flag: '🇯🇵',
-      rate: 8.94,
-      change: -0.05,
-      changePercent: -0.56,
-      isPositive: false
-    },
-    {
-      id: 3,
-      currencyPair: 'EUR/KRW',
-      flag: '🇪🇺',
-      rate: 1456.78,
-      change: 8.45,
-      changePercent: 0.58,
-      isPositive: true
-    },
-    {
-      id: 4,
-      currencyPair: 'CNY/KRW',
-      flag: '🇨🇳',
-      rate: 184.32,
-      change: 2.15,
-      changePercent: 1.18,
-      isPositive: true
-    }
-  ];
-  
-  const [rates, setRates] = useState(fallbackRates);
+  // Fallback 데이터 제거됨 - 실제 API 데이터만 사용
+  const [rates, setRates] = useState([]);
   
   // API 데이터가 있으면 실제 환율로 업데이트
   useEffect(() => {
@@ -71,7 +32,8 @@ export function ExchangeRatesGrid() {
       
       setRates(updatedRates);
     } else {
-      console.log('❌ ExchangeRatesGrid - API 데이터 없음, fallback 사용');
+      console.log('❌ ExchangeRatesGrid - API 데이터 없음');
+      setRates([]);
     }
   }, [apiRates]);
 

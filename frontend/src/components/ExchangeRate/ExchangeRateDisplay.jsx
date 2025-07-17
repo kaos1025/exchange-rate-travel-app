@@ -22,37 +22,10 @@ export function ExchangeRateDisplay() {
     setError(null);
 
     try {
-      // 목업 환율 데이터
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const mockRates = {
-        'USD': {
-          rates: {
-            'KRW': 1320.50,
-            'EUR': 0.91,
-            'JPY': 147.50,
-            'GBP': 0.79,
-            'CNY': 7.13
-          }
-        },
-        'EUR': {
-          rates: {
-            'KRW': 1450.30,
-            'USD': 1.10,
-            'JPY': 162.15,
-            'GBP': 0.87
-          }
-        },
-        'JPY': {
-          rates: {
-            'KRW': 8.95,
-            'USD': 0.0068
-          }
-        }
-      };
-
-      setRates(mockRates);
-      setLastUpdate(new Date());
+      // 실제 API 호출 (mock 데이터 제거)
+      setError('환율 데이터를 사용할 수 없습니다. 실제 API를 연결해주세요.');
+      setRates({});
+      setLastUpdate(null);
     } catch (err) {
       setError('환율 정보를 가져오는데 실패했습니다.');
     } finally {

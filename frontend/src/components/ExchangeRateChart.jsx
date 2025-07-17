@@ -3,32 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Card, CardContent } from './ui/Card'
 import { TrendingUp, TrendingDown, Calendar } from 'lucide-react'
 
-// 임시 데이터 (실제로는 API에서 가져올 예정)
-const generateMockData = (days = 30) => {
-  const data = []
-  const baseRate = 1340
-  let currentRate = baseRate
-  
-  for (let i = days; i >= 0; i--) {
-    const date = new Date()
-    date.setDate(date.getDate() - i)
-    
-    // 랜덤한 변동 추가
-    const change = (Math.random() - 0.5) * 20
-    currentRate += change
-    
-    data.push({
-      date: date.toISOString().split('T')[0],
-      rate: parseFloat(currentRate.toFixed(2)),
-      formattedDate: date.toLocaleDateString('ko-KR', { 
-        month: 'short', 
-        day: 'numeric' 
-      })
-    })
-  }
-  
-  return data
-}
+// Mock 데이터 생성 함수 제거됨 - 실제 API 데이터 사용 필요
 
 export function ExchangeRateChart({ 
   currencyPair = 'USD/KRW',
@@ -41,15 +16,11 @@ export function ExchangeRateChart({
   const [chartType, setChartType] = useState(initialChartType)
 
   useEffect(() => {
-    // 실제로는 API에서 데이터를 가져올 예정
+    // Mock 데이터 제거됨 - 실제 API 연결 필요
     const fetchData = async () => {
       setLoading(true)
-      // 모의 지연
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      const days = selectedPeriod === '7D' ? 7 : selectedPeriod === '30D' ? 30 : 90
-      const mockData = generateMockData(days)
-      setData(mockData)
+      // 실제 API 호출 대신 빈 데이터 설정
+      setData([])
       setLoading(false)
     }
 
