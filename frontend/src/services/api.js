@@ -127,7 +127,9 @@ class ApiService {
 
   // 환율 히스토리 데이터 조회
   async getExchangeRateHistory(currencyPair, days = 30) {
-    return await this.request(`/exchange/rates/history/${currencyPair}?days=${days}`);
+    // currency_pair 형식: "USD/KRW" -> "USD", "KRW"로 분리
+    const [fromCurrency, toCurrency] = currencyPair.split('/');
+    return await this.request(`/exchange/rates/history/${fromCurrency}/${toCurrency}?days=${days}`);
   }
 
   // 일일 환율 데이터 조회
