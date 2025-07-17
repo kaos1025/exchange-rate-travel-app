@@ -71,26 +71,16 @@ class DailyExchangeRateService:
                     if previous_rate != 0:
                         change_percentage = (change_amount / previous_rate) * 100
                 
-                daily_rate = DailyExchangeRateCreate(
-                    currency_from=currency_from,
-                    currency_to="KRW",
-                    rate=Decimal(str(rate)),
-                    previous_rate=previous_rate,
-                    change_amount=change_amount,
-                    change_percentage=change_percentage,
-                    date=target_date
-                )
-                
-                # Decimal 타입을 float로, date 타입을 문자열로 변환하여 JSON 직렬화 가능하도록 변환
-                rate_dict = daily_rate.model_dump()
-                rate_dict['rate'] = float(rate_dict['rate'])
-                if rate_dict['previous_rate'] is not None:
-                    rate_dict['previous_rate'] = float(rate_dict['previous_rate'])
-                if rate_dict['change_amount'] is not None:
-                    rate_dict['change_amount'] = float(rate_dict['change_amount'])
-                if rate_dict['change_percentage'] is not None:
-                    rate_dict['change_percentage'] = float(rate_dict['change_percentage'])
-                rate_dict['date'] = rate_dict['date'].isoformat()  # date 타입을 ISO 문자열로 변환
+                # 직접 딕셔너리 구성으로 JSON 직렬화 문제 해결
+                rate_dict = {
+                    'currency_from': currency_from,
+                    'currency_to': "KRW",
+                    'rate': float(rate),
+                    'previous_rate': float(previous_rate) if previous_rate is not None else None,
+                    'change_amount': float(change_amount) if change_amount is not None else None,
+                    'change_percentage': float(change_percentage) if change_percentage is not None else None,
+                    'date': target_date.isoformat()  # date 타입을 ISO 문자열로 변환
+                }
                 
                 stored_rates.append(rate_dict)
             
