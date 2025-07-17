@@ -9,6 +9,10 @@ export function Calculator() {
   const [toCurrency, setToCurrency] = useState('KRW');
   const [result, setResult] = useState('');
 
+  // 디버깅 로그
+  console.log('🧮 Calculator - API 상태:', { apiRates, loading, error });
+  console.log('🧮 Calculator - apiRates 구조:', apiRates?.rates ? Object.keys(apiRates.rates).slice(0,5) : 'null');
+
   const currencies = [
     { code: 'USD', name: 'US Dollar' },
     { code: 'JPY', name: 'Japanese Yen' },
