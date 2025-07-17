@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { useNavigate, Link } from 'react-router-dom'
-import axios from 'axios'
+import apiService from '../services/api'
 
 const ExchangeRates = () => {
   const { user, loading, signOut } = useAuth()
@@ -44,8 +44,8 @@ const ExchangeRates = () => {
   const fetchExchangeRates = async () => {
     try {
       setLoadingRates(true)
-      const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD')
-      setRates(response.data.rates)
+      const response = await apiService.getExchangeRates()
+      setRates(response.rates)
       setIsOfflineMode(false)
       setLoadingRates(false)
     } catch (error) {
