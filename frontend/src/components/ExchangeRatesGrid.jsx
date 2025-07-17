@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useExchangeRates } from '../hooks/useApi';
 
 export function ExchangeRatesGrid() {
-  const [rates, setRates] = useState([
+  // API에서 실제 환율 데이터 가져오기
+  const { data: apiRates, loading, error } = useExchangeRates();
+  
+  // 기본값 (API 실패 시 사용)
+  const fallbackRates = [
     {
       id: 1,
       currencyPair: 'USD/KRW',
@@ -38,7 +43,37 @@ export function ExchangeRatesGrid() {
       changePercent: 1.18,
       isPositive: true
     }
-  ]);
+  ];
+  
+  const [rates, setRates] = useState(fallbackRates);
+  
+  // API 데이터가 있으면 실제 환율로 업데이트
+  useEffect(() => {
+    if (apiRates && apiRates.rates) {
+      console.log('✅ ExchangeRatesGrid - API 데이터로 업데이트:', apiRates);
+      
+      const targetCurrencies = ['USD', 'JPY', 'EUR', 'CNY'];
+      const flags = { USD: '🇺🇸', JPY: '🇯🇵', EUR: '🇪🇺', CNY: '🇨🇳' };
+      
+      const updatedRates = targetCurrencies.map((currency, index) => {
+        const rate = currency === 'USD' ? apiRates.rates.KRW : apiRates.rates.KRW / apiRates.rates[currency];
+        
+        return {
+          id: index + 1,
+          currencyPair: `${currency}/KRW`,
+          flag: flags[currency],
+          rate: parseFloat(rate.toFixed(2)),
+          change: 0, // 변동폭 데이터가 없어서 0으로 설정
+          changePercent: 0, // 변동률 데이터가 없어서 0으로 설정
+          isPositive: true
+        };
+      });
+      
+      setRates(updatedRates);
+    } else {
+      console.log('❌ ExchangeRatesGrid - API 데이터 없음, fallback 사용');
+    }
+  }, [apiRates]);
 
   return (
     <section id="rates" className="mb-12">
