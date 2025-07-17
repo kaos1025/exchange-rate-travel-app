@@ -174,9 +174,16 @@ async def get_latest_rates_with_changes():
 async def store_daily_rates():
     """수동으로 일일 환율을 저장합니다. (테스트용)"""
     try:
-        monitoring_service = get_monitoring_service()
-        result = await monitoring_service.manual_store_daily_rates()
-        return result
+        start_time = datetime.now()
+        success = await daily_exchange_service.store_daily_rates()
+        end_time = datetime.now()
+        
+        return {
+            "success": success,
+            "start_time": start_time.isoformat(),
+            "end_time": end_time.isoformat(),
+            "duration_seconds": (end_time - start_time).total_seconds()
+        }
     except Exception as e:
         import traceback
         return {
