@@ -101,7 +101,7 @@ export function Calculator() {
               value={result}
               readOnly
               className="w-40 px-4 py-3 text-center border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white cursor-not-allowed"
-              placeholder="134,050"
+              placeholder=""
             />
           </div>
           
