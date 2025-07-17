@@ -34,7 +34,7 @@ export function CurrencyConverter() {
     try {
       // 목업 환율 데이터 (실제 API 대신 사용)
       const mockRates = {
-        'USD-KRW': 1320.50,
+        'USD-KRW': 1318.50,
         'KRW-USD': 0.000757,
         'EUR-KRW': 1450.30,
         'KRW-EUR': 0.000689,
