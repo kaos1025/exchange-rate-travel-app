@@ -30,7 +30,8 @@ class DailyExchangeRateService:
                 return True
             
             # 현재 환율 조회
-            current_rates = await self.exchange_service.get_rates(['USD', 'JPY', 'EUR', 'CNY'], 'KRW')
+            current_rates_data = await self.exchange_service.get_current_rates('USD')
+            current_rates = current_rates_data.get('rates', {})
             
             if not current_rates:
                 logger.error("Failed to fetch current exchange rates")
@@ -40,9 +41,22 @@ class DailyExchangeRateService:
             previous_date = target_date - timedelta(days=1)
             
             stored_rates = []
-            for currency_from, rate in current_rates.items():
-                if currency_from == 'KRW':
+            target_currencies = ['USD', 'JPY', 'EUR', 'CNY']
+            
+            for currency_from in target_currencies:
+                if currency_from not in current_rates:
                     continue
+                    
+                # USD 기준 환율을 KRW 기준으로 변환
+                if currency_from == 'USD':
+                    rate = current_rates.get('KRW', 0)
+                else:
+                    usd_to_krw = current_rates.get('KRW', 0)
+                    usd_to_currency = current_rates.get(currency_from, 0)
+                    if usd_to_currency != 0:
+                        rate = usd_to_krw / usd_to_currency
+                    else:
+                        continue
                     
                 # 전일 환율 조회
                 previous_rate_data = self.supabase.table("daily_exchange_rates").select("rate").eq("currency_from", currency_from).eq("currency_to", "KRW").eq("date", previous_date.isoformat()).execute()
