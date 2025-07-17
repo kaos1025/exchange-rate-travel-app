@@ -4,7 +4,7 @@ from decimal import Decimal
 from typing import List, Optional
 import logging
 
-from ..config import get_supabase_client
+from ..database import get_supabase
 from ..models.daily_exchange_rate import DailyExchangeRate, DailyExchangeRateCreate
 from .exchange_rate import ExchangeRateService
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class DailyExchangeRateService:
     def __init__(self):
-        self.supabase = get_supabase_client()
+        self.supabase = get_supabase()
         self.exchange_service = ExchangeRateService()
         
     async def store_daily_rates(self, target_date: Optional[date] = None) -> bool:
