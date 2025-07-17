@@ -7,7 +7,7 @@ export function Calculator() {
   const [fromAmount, setFromAmount] = useState('100');
   const [fromCurrency, setFromCurrency] = useState('USD');
   const [toCurrency, setToCurrency] = useState('KRW');
-  const [result, setResult] = useState('134,050');
+  const [result, setResult] = useState('');
 
   const currencies = [
     { code: 'USD', name: 'US Dollar' },
