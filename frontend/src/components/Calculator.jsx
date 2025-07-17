@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { useExchangeRates } from '../hooks/useApi';
 
 export function Calculator() {
+  const { data: apiRates, loading, error } = useExchangeRates();
   const [fromAmount, setFromAmount] = useState('100');
   const [fromCurrency, setFromCurrency] = useState('USD');
   const [toCurrency, setToCurrency] = useState('KRW');
@@ -16,21 +18,41 @@ export function Calculator() {
   ];
 
   const handleCalculate = () => {
-    // Mock calculation - in real app, this would call an API
-    const rates = {
-      'USD': { 'KRW': 1340.50, 'JPY': 149.8, 'EUR': 0.92, 'CNY': 7.25 },
-      'JPY': { 'KRW': 8.94, 'USD': 0.0067, 'EUR': 0.0061, 'CNY': 0.048 },
-      'EUR': { 'KRW': 1456.78, 'USD': 1.09, 'JPY': 163.4, 'CNY': 7.89 },
-      'CNY': { 'KRW': 184.32, 'USD': 0.138, 'JPY': 20.7, 'EUR': 0.127 }
-    };
-
     if (fromCurrency === toCurrency) {
       setResult(fromAmount);
-    } else {
-      const rate = rates[fromCurrency]?.[toCurrency] || 1;
-      const calculatedResult = (parseFloat(fromAmount) * rate).toFixed(2);
-      setResult(Number(calculatedResult).toLocaleString());
+      return;
     }
+
+    // API 데이터가 있으면 실제 환율 사용, 없으면 fallback 데이터 사용
+    let rate = 1;
+    
+    if (apiRates && apiRates.rates) {
+      console.log('✅ Calculator - API 데이터 사용:', apiRates);
+      // USD 기준 환율에서 변환
+      if (fromCurrency === 'USD') {
+        rate = apiRates.rates[toCurrency] || 1;
+      } else if (toCurrency === 'USD') {
+        rate = 1 / (apiRates.rates[fromCurrency] || 1);
+      } else {
+        // 두 통화 모두 USD가 아닌 경우
+        const fromToUsd = 1 / (apiRates.rates[fromCurrency] || 1);
+        const usdToTo = apiRates.rates[toCurrency] || 1;
+        rate = fromToUsd * usdToTo;
+      }
+    } else {
+      console.log('❌ Calculator - API 데이터 없음, fallback 사용');
+      // Fallback 환율 데이터
+      const fallbackRates = {
+        'USD': { 'KRW': 1340.50, 'JPY': 149.8, 'EUR': 0.92, 'CNY': 7.25 },
+        'JPY': { 'KRW': 8.94, 'USD': 0.0067, 'EUR': 0.0061, 'CNY': 0.048 },
+        'EUR': { 'KRW': 1456.78, 'USD': 1.09, 'JPY': 163.4, 'CNY': 7.89 },
+        'CNY': { 'KRW': 184.32, 'USD': 0.138, 'JPY': 20.7, 'EUR': 0.127 }
+      };
+      rate = fallbackRates[fromCurrency]?.[toCurrency] || 1;
+    }
+
+    const calculatedResult = (parseFloat(fromAmount) * rate).toFixed(2);
+    setResult(Number(calculatedResult).toLocaleString());
   };
 
   return (
