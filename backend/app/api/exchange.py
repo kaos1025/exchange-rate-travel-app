@@ -173,6 +173,41 @@ async def get_latest_rates_with_changes():
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"최신 환율 조회 실패: {str(e)}")
 
+@router.get("/rates/stored", response_model=Dict)
+async def get_stored_rates():
+    """데이터베이스에 저장된 최신 환율 데이터만 조회 (실시간 API 호출 없음)"""
+    try:
+        rates = await daily_exchange_service.get_latest_stored_rates_only()
+        
+        if not rates:
+            return {
+                "rates": [],
+                "is_realtime": False,
+                "data_source": "none",
+                "message": "저장된 환율 데이터가 없습니다"
+            }
+        
+        # 응답 형식을 기존 latest 엔드포인트와 동일하게 맞춤
+        formatted_rates = []
+        for rate in rates:
+            formatted_rates.append({
+                "currency_pair": f"{rate.currency_from}/{rate.currency_to}",
+                "rate": float(rate.rate),
+                "previous_rate": float(rate.previous_rate) if rate.previous_rate else None,
+                "change_amount": float(rate.change_amount) if rate.change_amount else 0.0,
+                "change_percentage": float(rate.change_percentage) if rate.change_percentage else 0.0,
+                "date": str(rate.date)
+            })
+        
+        return {
+            "rates": formatted_rates,
+            "is_realtime": False,
+            "data_source": "stored",
+            "message": f"저장된 환율 데이터 ({rates[0].date})"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"저장된 환율 조회 실패: {str(e)}")
+
 @router.post("/rates/store")
 async def store_daily_rates():
     """수동으로 일일 환율을 저장합니다. (테스트용)"""

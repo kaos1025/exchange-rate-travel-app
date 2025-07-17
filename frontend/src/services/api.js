@@ -120,6 +120,11 @@ class ApiService {
     return await this.request('/exchange/rates/latest');
   }
 
+  // 저장된 환율 데이터만 조회 (실시간 API 호출 없음)
+  async getStoredRates() {
+    return await this.request('/exchange/rates/stored');
+  }
+
   // 일일 환율 데이터 조회
   async getDailyRates(targetDate = null) {
     const params = targetDate ? `?target_date=${targetDate}` : '';

@@ -157,3 +157,27 @@ class DailyExchangeRateService:
             except Exception as fallback_error:
                 logger.error(f"Fallback data fetch also failed: {fallback_error}")
                 return [], False
+
+    async def get_latest_stored_rates_only(self) -> List[DailyExchangeRate]:
+        """실시간 API 호출 없이 데이터베이스에서만 최신 환율 데이터 조회"""
+        try:
+            # 최신 날짜 조회
+            latest_date_result = self.supabase.table("daily_exchange_rates").select("date").order("date", desc=True).limit(1).execute()
+            
+            if not latest_date_result.data:
+                return []
+            
+            latest_date = latest_date_result.data[0]['date']
+            
+            # 최신 날짜의 모든 환율 데이터 조회
+            result = self.supabase.table("daily_exchange_rates").select("*").eq("date", latest_date).execute()
+            
+            if result.data:
+                rates = [DailyExchangeRate(**item) for item in result.data]
+                return rates
+            else:
+                return []
+                
+        except Exception as e:
+            logger.error(f"Error fetching stored exchange rates: {e}")
+            return []

@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import ExchangeRateCard from "./ExchangeRateCard";
-import { useExchangeRates, useLatestRatesWithChanges } from "../../hooks/useApi";
+import { useExchangeRates, useLatestRatesWithChanges, useStoredRates } from "../../hooks/useApi";
 
 // 백업 데이터 제거 - 이제 서버에서 저장된 데이터로 폴백 처리
 
 export default function ExchangeRateDashboard() {
-  const { data: latestRates, loading, error, refetch } = useLatestRatesWithChanges();
+  const { data: storedRates, loading, error, refetch } = useStoredRates();
   const [displayRates, setDisplayRates] = useState([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [hasReceivedData, setHasReceivedData] = useState(false);
 
   useEffect(() => {
-    if (latestRates && latestRates.rates && Array.isArray(latestRates.rates) && latestRates.rates.length > 0) {
+    if (storedRates && storedRates.rates && Array.isArray(storedRates.rates) && storedRates.rates.length > 0) {
       // 새로운 API 데이터를 컴포넌트에 맞는 형태로 변환
-      const transformedRates = latestRates.rates.map(rate => {
+      const transformedRates = storedRates.rates.map(rate => {
         const [from, to] = rate.currency_pair.split('/');
         
         return {
@@ -29,7 +29,7 @@ export default function ExchangeRateDashboard() {
       setIsInitialLoading(false);
       setHasReceivedData(true);
     }
-  }, [latestRates]);
+  }, [storedRates]);
 
   // 통화 코드를 국가 코드로 변환하는 헬퍼 함수
   const getCountryCode = (currency) => {
@@ -62,15 +62,15 @@ export default function ExchangeRateDashboard() {
         </div>
       )}
       
-      {latestRates && !loading && (
+      {storedRates && !loading && (
         <div className="text-center mb-8">
-          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${latestRates.is_realtime ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-blue-100 text-blue-700`}>
             <span className="text-base">
-              {latestRates.is_realtime ? '🟢' : '🟡'}
+              💾
             </span>
-            {latestRates.is_realtime ? '실시간 환율 데이터' : '저장된 환율 데이터'}
+            저장된 환율 데이터
           </div>
-          <p className="text-xs text-gray-500 mt-2">{latestRates.message}</p>
+          <p className="text-xs text-gray-500 mt-2">{storedRates.message}</p>
         </div>
       )}
       

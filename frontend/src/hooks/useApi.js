@@ -49,6 +49,15 @@ export const useLatestRatesWithChanges = () => {
   return result;
 }
 
+// 저장된 환율 데이터만 조회하는 훅 (실시간 API 호출 없음)
+export const useStoredRates = () => {
+  const result = useApiCall(() => {
+    return apiService.getStoredRates();
+  });
+  
+  return result;
+}
+
 // 일일 환율 데이터 훅
 export const useDailyRates = (targetDate = null) => {
   const result = useApiCall(() => {
