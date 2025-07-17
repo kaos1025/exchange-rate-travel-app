@@ -7,6 +7,8 @@ import { useExchangeRates, useLatestRatesWithChanges } from "../../hooks/useApi"
 export default function ExchangeRateDashboard() {
   const { data: latestRates, loading, error, refetch } = useLatestRatesWithChanges();
   const [displayRates, setDisplayRates] = useState([]);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [hasReceivedData, setHasReceivedData] = useState(false);
 
   useEffect(() => {
     if (latestRates && latestRates.rates) {
@@ -24,6 +26,8 @@ export default function ExchangeRateDashboard() {
       });
       
       setDisplayRates(transformedRates);
+      setIsInitialLoading(false);
+      setHasReceivedData(true);
     }
   }, [latestRates]);
 
@@ -87,12 +91,12 @@ export default function ExchangeRateDashboard() {
       )}
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {displayRates.length > 0 ? (
+        {hasReceivedData && displayRates.length > 0 ? (
           displayRates.map((rate) => (
             <ExchangeRateCard key={rate.pair} {...rate} />
           ))
         ) : (
-          !loading && (
+          !loading && hasReceivedData && displayRates.length === 0 && (
             <div className="col-span-full text-center py-12">
               <div className="text-gray-400 text-6xl mb-4">💱</div>
               <div className="text-gray-500">

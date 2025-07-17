@@ -29,19 +29,19 @@ export default function ExchangeRateCard({ pair, country, rate, diff, diffRate }
   // 통화 쌍에서 기호 추출
   const [fromCurrency, toCurrency] = pair.split('/');
   
-  // 통화별 아이콘 
+  // 통화별 국가 아이콘 
   const getCurrencyIcon = (currency) => {
     const icons = {
-      'USD': '$',
-      'JPY': '¥', 
-      'EUR': '€',
-      'CNY': '¥',
-      'KRW': '₩',
-      'GBP': '£',
-      'AUD': 'A$',
-      'CAD': 'C$'
+      'USD': '🇺🇸',
+      'JPY': '🇯🇵', 
+      'EUR': '🇪🇺',
+      'CNY': '🇨🇳',
+      'KRW': '🇰🇷',
+      'GBP': '🇬🇧',
+      'AUD': '🇦🇺',
+      'CAD': '🇨🇦'
     };
-    return icons[currency] || '💱';
+    return icons[currency] || currency;
   };
 
   // 통화별 색상
@@ -66,7 +66,7 @@ export default function ExchangeRateCard({ pair, country, rate, diff, diffRate }
       
       <div className="flex justify-between items-center mb-1">
         <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 bg-gradient-to-br ${getCurrencyColor(fromCurrency)} rounded-full flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform duration-300`}>
+          <div className={`w-10 h-10 bg-gradient-to-br ${getCurrencyColor(fromCurrency)} rounded-full flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
             {getCurrencyIcon(fromCurrency)}
           </div>
           <span className="text-sm font-semibold text-gray-700">{pair}</span>
