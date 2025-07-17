@@ -3,6 +3,7 @@ import { Header } from './Header';
 import { Hero } from './Hero';
 import { ExchangeRatesGrid } from './ExchangeRatesGrid';
 import { Calculator } from './Calculator';
+import { ExchangeRateChart } from './ExchangeRateChart';
 import { AlertSettings } from './AlertSettings';
 import { Features } from './Features';
 import { Footer } from './Footer';
@@ -20,6 +21,7 @@ export function LandingPage() {
               <Hero />
               <ExchangeRatesGrid />
               <Calculator />
+              <ExchangeRateChart />
               <AlertSettings />
               <Features />
             </div>

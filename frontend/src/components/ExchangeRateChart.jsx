@@ -9,6 +9,7 @@ export function ExchangeRateChart({
   period = '30D',
   chartType: initialChartType = 'line' 
 }) {
+  console.log('ExchangeRateChart 컴포넌트 렌더링 시작')
   const [selectedPeriod, setSelectedPeriod] = useState(period)
   const [chartType, setChartType] = useState(initialChartType)
   
@@ -17,6 +18,12 @@ export function ExchangeRateChart({
   
   // 실제 API 데이터 조회
   const { data: historyData, loading, error } = useExchangeRateHistory(currencyPair, days)
+  
+  // 디버깅용 로그
+  console.log('ExchangeRateChart - currencyPair:', currencyPair, 'days:', days)
+  console.log('ExchangeRateChart - historyData:', historyData)
+  console.log('ExchangeRateChart - loading:', loading)
+  console.log('ExchangeRateChart - error:', error)
   
   // 차트에 사용할 데이터 변환
   const chartData = historyData?.data?.map(item => ({
