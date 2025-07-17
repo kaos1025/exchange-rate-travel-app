@@ -1,10 +1,12 @@
 import config from '../config.js'
 
-const API_BASE_URL = config.API_BASE_URL
+// Railway URL을 강제로 사용 (config가 실패할 경우 대비)
+const API_BASE_URL = config.API_BASE_URL || 'https://exchange-rate-travel-app-production.up.railway.app'
 
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL
+    console.log('🔧 ApiService 생성됨. baseURL:', this.baseURL);
   }
 
   // 토큰 관리
