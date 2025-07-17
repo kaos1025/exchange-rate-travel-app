@@ -77,8 +77,10 @@ export function ExchangeRateChart({
     return (
       <Card className="max-w-4xl mx-auto">
         <CardContent className="p-6">
-          <div className="flex items-center justify-center h-96">
+          <div className="flex flex-col items-center justify-center h-96 space-y-4">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p className="text-gray-600">📊 환율 차트 데이터 로딩 중...</p>
+            <p className="text-sm text-gray-500">({currencyPair}, {days}일간)</p>
           </div>
         </CardContent>
       </Card>
@@ -137,7 +139,8 @@ export function ExchangeRateChart({
               <div className="text-center">
                 <div className="text-red-500 text-4xl mb-4">⚠️</div>
                 <p className="text-red-600 mb-2">차트 데이터를 불러올 수 없습니다</p>
-                <p className="text-gray-500 text-sm">잠시 후 다시 시도해주세요</p>
+                <p className="text-gray-500 text-sm mb-2">잠시 후 다시 시도해주세요</p>
+                <p className="text-xs text-gray-400">오류: {error.toString()}</p>
               </div>
             </div>
           ) : chartData.length === 0 ? (

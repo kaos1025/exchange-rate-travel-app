@@ -129,7 +129,17 @@ class ApiService {
   async getExchangeRateHistory(currencyPair, days = 30) {
     // currency_pair 형식: "USD/KRW" -> "USD", "KRW"로 분리
     const [fromCurrency, toCurrency] = currencyPair.split('/');
-    return await this.request(`/exchange/rates/history/${fromCurrency}/${toCurrency}?days=${days}`);
+    const endpoint = `/exchange/rates/history/${fromCurrency}/${toCurrency}?days=${days}`;
+    console.log('🚀 API 호출 시작:', endpoint);
+    
+    try {
+      const result = await this.request(endpoint);
+      console.log('✅ API 호출 성공:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ API 호출 실패:', error);
+      throw error;
+    }
   }
 
   // 일일 환율 데이터 조회
