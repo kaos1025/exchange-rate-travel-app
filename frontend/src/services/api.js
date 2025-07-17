@@ -6,7 +6,6 @@ const API_BASE_URL = config.API_BASE_URL || 'https://exchange-rate-travel-app-pr
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL
-    console.log('🔧 ApiService 생성됨. baseURL:', this.baseURL);
   }
 
   // 토큰 관리
@@ -47,7 +46,6 @@ class ApiService {
 
       return await response.json()
     } catch (error) {
-      console.error(`API request failed: ${endpoint}`, error)
       throw error
     }
   }
@@ -105,21 +103,7 @@ class ApiService {
 
   // 환율 API
   async getExchangeRates() {
-    console.log('=== ApiService.getExchangeRates ===');
-    console.log('API URL:', `${this.baseURL}/exchange/rates`);
-    console.log('Current time:', new Date().toISOString());
-    try {
-      const result = await this.request('/exchange/rates');
-      console.log('API 성공 응답:', result);
-      console.log('Response type:', typeof result);
-      console.log('Response keys:', Object.keys(result || {}));
-      return result;
-    } catch (error) {
-      console.error('API 오류 상세:', error);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      throw error;
-    }
+    return await this.request('/exchange/rates');
   }
 
   async convertCurrency(from, to, amount) {
@@ -133,46 +117,20 @@ class ApiService {
 
   // 최신 환율 데이터 및 변동률 조회
   async getLatestRatesWithChanges() {
-    console.log('=== ApiService.getLatestRatesWithChanges ===');
-    console.log('API URL:', `${this.baseURL}/exchange/rates/latest`);
-    try {
-      const result = await this.request('/exchange/rates/latest');
-      console.log('최신 환율 API 성공 응답:', result);
-      return result;
-    } catch (error) {
-      console.error('최신 환율 API 오류:', error);
-      throw error;
-    }
+    return await this.request('/exchange/rates/latest');
   }
 
   // 일일 환율 데이터 조회
   async getDailyRates(targetDate = null) {
-    console.log('=== ApiService.getDailyRates ===');
     const params = targetDate ? `?target_date=${targetDate}` : '';
-    console.log('API URL:', `${this.baseURL}/exchange/rates/daily${params}`);
-    try {
-      const result = await this.request(`/exchange/rates/daily${params}`);
-      console.log('일일 환율 API 성공 응답:', result);
-      return result;
-    } catch (error) {
-      console.error('일일 환율 API 오류:', error);
-      throw error;
-    }
+    return await this.request(`/exchange/rates/daily${params}`);
   }
 
   // 수동 일일 환율 저장 (테스트용)
   async storeDailyRates() {
-    console.log('=== ApiService.storeDailyRates ===');
-    try {
-      const result = await this.request('/exchange/rates/store', {
-        method: 'POST'
-      });
-      console.log('일일 환율 저장 API 성공 응답:', result);
-      return result;
-    } catch (error) {
-      console.error('일일 환율 저장 API 오류:', error);
-      throw error;
-    }
+    return await this.request('/exchange/rates/store', {
+      method: 'POST'
+    });
   }
 
   // 알림 설정 API
