@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
-from datetime import date
+from datetime import date, datetime
 from pydantic import BaseModel
 from ..services.exchange_rate import ExchangeRateService
 from ..services.daily_exchange_rate_service import DailyExchangeRateService
@@ -178,4 +178,10 @@ async def store_daily_rates():
         result = await monitoring_service.manual_store_daily_rates()
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"일일 환율 저장 실패: {str(e)}")
+        import traceback
+        return {
+            "success": False,
+            "error": str(e),
+            "traceback": traceback.format_exc(),
+            "timestamp": datetime.now().isoformat()
+        }
