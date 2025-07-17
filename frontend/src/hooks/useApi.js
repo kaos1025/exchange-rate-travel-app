@@ -23,9 +23,7 @@ export const useApiCall = (apiFunction, dependencies = []) => {
   }
 
   useEffect(() => {
-    if (dependencies.length === 0) {
-      execute()
-    }
+    execute()
   }, dependencies)
 
   return { data, loading, error, execute, refetch: execute }
