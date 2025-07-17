@@ -11,7 +11,7 @@ export default function ExchangeRateDashboard() {
   const [hasReceivedData, setHasReceivedData] = useState(false);
 
   useEffect(() => {
-    if (latestRates && latestRates.rates) {
+    if (latestRates && latestRates.rates && Array.isArray(latestRates.rates) && latestRates.rates.length > 0) {
       // 새로운 API 데이터를 컴포넌트에 맞는 형태로 변환
       const transformedRates = latestRates.rates.map(rate => {
         const [from, to] = rate.currency_pair.split('/');
