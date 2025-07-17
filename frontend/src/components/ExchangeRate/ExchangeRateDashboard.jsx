@@ -29,12 +29,19 @@ export default function ExchangeRateDashboard() {
   console.log('================================');
 
   useEffect(() => {
+    console.log('🔄 useEffect 실행 - apiRates 변경 감지:', apiRates);
+    
     if (apiRates && apiRates.rates) {
+      console.log('✅ API 데이터 있음! 변환 시작');
+      console.log('API rates 구조:', apiRates.rates);
+      
       // API 데이터를 컴포넌트에 맞는 형태로 변환
       const targetCurrencies = ['USD', 'JPY', 'EUR', 'CNY'];
       const transformedRates = targetCurrencies.map(currency => {
         const pair = `${currency}/KRW`;
         const rate = currency === 'USD' ? apiRates.rates.KRW : apiRates.rates.KRW / apiRates.rates[currency];
+        
+        console.log(`${pair}: ${rate}`);
         
         return {
           pair,
@@ -44,7 +51,14 @@ export default function ExchangeRateDashboard() {
           diffRate: 0 // 변동률 데이터가 없어서 0으로 설정
         };
       });
+      
+      console.log('💱 변환된 환율 데이터:', transformedRates);
       setDisplayRates(transformedRates);
+      console.log('✅ displayRates 업데이트 완료');
+    } else {
+      console.log('❌ API 데이터 없음 - fallback 사용');
+      console.log('apiRates:', apiRates);
+      console.log('apiRates?.rates:', apiRates?.rates);
     }
   }, [apiRates]);
 
@@ -103,7 +117,9 @@ export default function ExchangeRateDashboard() {
           <p>Loading: {loading ? 'true' : 'false'}</p>
           <p>Error: {error || 'none'}</p>
           <p>API Data: {apiRates ? 'received' : 'null'}</p>
-          <p>Display Mode: {apiRates?.rates ? 'Real API' : 'Fallback'}</p>
+          <p>Display Mode: {apiRates?.rates ? '✅ Real API' : '❌ Fallback'}</p>
+          <p>API Status: {loading ? 'Loading...' : error ? 'Error' : apiRates ? 'Success' : 'No Data'}</p>
+          <p>Rates Available: {apiRates?.rates ? Object.keys(apiRates.rates).length + ' currencies' : 'None'}</p>
           <p>Current Time: {new Date().toLocaleTimeString()}</p>
           <p>API Structure: {apiRates ? JSON.stringify(Object.keys(apiRates)) : 'no data'}</p>
           <p>Display Rates Count: {displayRates.length}</p>

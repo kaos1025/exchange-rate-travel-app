@@ -3,27 +3,36 @@ import { apiService } from '../services/api'
 
 // 일반적인 API 호출 훅
 export const useApiCall = (apiFunction, dependencies = []) => {
+  console.log('🎆 useApiCall 훅 시작!');
+  
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   const execute = async (...args) => {
+    console.log('📥 useApiCall execute 시작');
     try {
       setLoading(true)
       setError(null)
+      console.log('📞 API 함수 호출 전...');
       const result = await apiFunction(...args)
+      console.log('✅ API 함수 호출 성공:', result);
       setData(result)
       return result
     } catch (err) {
+      console.error('❌ API 함수 호출 실패:', err);
       setError(err.message)
       throw err
     } finally {
+      console.log('🏁 API 호출 완료 - loading false');
       setLoading(false)
     }
   }
 
   useEffect(() => {
+    console.log('🔄 useApiCall useEffect - dependencies:', dependencies);
     if (dependencies.length === 0) {
+      console.log('🚀 자동 execute 실행!');
       execute()
     }
   }, dependencies)
@@ -33,12 +42,19 @@ export const useApiCall = (apiFunction, dependencies = []) => {
 
 // 환율 정보 훅
 export const useExchangeRates = () => {
+  console.log('🎯 useExchangeRates 훅 실행!');
+  
   const result = useApiCall(() => {
-    console.log('useExchangeRates - API 호출 시작');
+    console.log('🚀 useExchangeRates - API 호출 시작');
+    console.log('📡 apiService 객체:', apiService);
     return apiService.getExchangeRates();
   });
   
-  console.log('useExchangeRates - 결과:', result);
+  console.log('📊 useExchangeRates - 결과:', result);
+  console.log('📈 useExchangeRates - data:', result.data);
+  console.log('⏳ useExchangeRates - loading:', result.loading);
+  console.log('❌ useExchangeRates - error:', result.error);
+  
   return result;
 }
 
