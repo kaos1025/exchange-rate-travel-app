@@ -95,7 +95,9 @@ class DailyExchangeRateService:
                 
         except Exception as e:
             logger.error(f"Error storing daily exchange rates: {e}")
-            return False
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            raise e  # 예외를 다시 발생시켜서 API 레벨에서 캐치할 수 있도록
     
     async def get_daily_rates(self, target_date: Optional[date] = None) -> List[DailyExchangeRate]:
         """특정 날짜의 일일 환율 데이터 조회"""
